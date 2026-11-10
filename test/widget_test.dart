@@ -19,7 +19,7 @@ void main() {
     repo.emit(null);
     await tester.pump();
 
-    expect(find.text('Medication Follow-up'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);
 
     auth.dispose();

@@ -49,9 +49,14 @@ class ControllableAuthRepository implements AuthRepository {
     required String email,
     required String password,
   }) {
+    signInCalls++;
+    lastSignInEmail = email;
     pendingAction = Completer<UserProfile>();
     return pendingAction!.future;
   }
+
+  int signInCalls = 0;
+  String? lastSignInEmail;
 
   @override
   Future<UserProfile> signUp({
