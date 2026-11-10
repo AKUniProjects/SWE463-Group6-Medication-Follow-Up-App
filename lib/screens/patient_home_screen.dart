@@ -126,21 +126,36 @@ class _DoseCard extends StatelessWidget {
         ),
         title: Text(record.medicationName),
         subtitle: Text(_timeLabel(record.scheduledTime)),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            StatusChip(label: _statusLabel(record.status), color: statusColor),
-            if (!isTaken)
-              TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${record.medicationName} marked taken')),
-                  );
-                },
-                child: const Text('Taken'),
-              ),
-          ],
+        // ListTile limits trailing height (56px). Compact density and
+        // shrink-wrapped tap targets fit the chip + button; FittedBox only
+        // scales down if large text would still exceed the limit.
+        trailing: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                StatusChip(
+                  label: _statusLabel(record.status),
+                  color: statusColor,
+                ),
+                if (!isTaken)
+                  TextButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${record.medicationName} marked taken')),
+                      );
+                    },
+                    child: const Text('Taken'),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
