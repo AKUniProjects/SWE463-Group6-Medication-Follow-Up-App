@@ -2,16 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/auth_provider.dart';
-
-/// Colors taken from the Phase 2 Figma "01 · Login" frame.
-class _LoginColors {
-  static const background = Color(0xFFF5FAFC);
-  static const heading = Color(0xFF16324F);
-  static const muted = Color(0xFF5F7383);
-  static const primary = Color(0xFF176B9A);
-  static const tint = Color(0xFFE6F2F8);
-  static const fieldBorder = Color(0xFFDCE6EC);
-}
+import '../widgets/auth_form_widgets.dart';
+import 'sign_up_screen.dart';
 
 /// Login screen (Figma 01 · Login).
 ///
@@ -53,13 +45,14 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() => _obscurePassword = !_obscurePassword);
   }
 
-  void _createAccount() {
-    // TODO(Task 2.4): open the registration screen.
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Account registration is coming soon.')),
-      );
+  Future<void> _createAccount() async {
+    final auth = context.read<AuthProvider>();
+    auth.clearActionError();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const SignUpScreen()),
+    );
+    // Don't carry a sign-up error back onto the login form.
+    if (mounted) auth.clearActionError();
   }
 
   @override
@@ -70,7 +63,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: _LoginColors.background,
+      backgroundColor: AuthColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -87,7 +80,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       Text(
                         'Welcome back',
                         style: text.headlineSmall?.copyWith(
-                          color: _LoginColors.heading,
+                          color: AuthColors.heading,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -95,20 +88,20 @@ class _AuthScreenState extends State<AuthScreen> {
                       Text(
                         'Your daily care, made simple',
                         style: text.bodyMedium?.copyWith(
-                          color: _LoginColors.muted,
+                          color: AuthColors.muted,
                         ),
                       ),
                       const SizedBox(height: 28),
                       const _BrandCard(),
                       const SizedBox(height: 16),
-                      _FieldCard(
+                      AuthFieldCard(
                         child: TextFormField(
                           controller: _emailController,
                           enabled: !busy,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           autofillHints: const [AutofillHints.email],
-                          decoration: _fieldDecoration(
+                          decoration: authFieldDecoration(
                             label: 'Email',
                             icon: Icons.people_outline,
                           ),
@@ -123,7 +116,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      _FieldCard(
+                      AuthFieldCard(
                         child: TextFormField(
                           controller: _passwordController,
                           enabled: !busy,
@@ -131,7 +124,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           textInputAction: TextInputAction.done,
                           autofillHints: const [AutofillHints.password],
                           onFieldSubmitted: (_) => busy ? null : _signIn(),
-                          decoration: _fieldDecoration(
+                          decoration: authFieldDecoration(
                             label: 'Password',
                             icon: _obscurePassword
                                 ? Icons.visibility_outlined
@@ -149,7 +142,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      _TonalButton(
+                      AuthTonalButton(
                         onPressed: _togglePassword,
                         icon: _obscurePassword
                             ? Icons.visibility_outlined
@@ -160,7 +153,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                       if (error != null) ...[
                         const SizedBox(height: 14),
-                        _ErrorBanner(message: error),
+                        AuthErrorBanner(message: error),
                       ],
                       const SizedBox(height: 14),
                       SizedBox(
@@ -168,9 +161,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: FilledButton(
                           onPressed: busy ? null : _signIn,
                           style: FilledButton.styleFrom(
-                            backgroundColor: _LoginColors.primary,
+                            backgroundColor: AuthColors.primary,
                             disabledBackgroundColor:
-                                _LoginColors.primary.withValues(alpha: 0.6),
+                                AuthColors.primary.withValues(alpha: 0.6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -191,7 +184,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      _TonalButton(
+                      AuthTonalButton(
                         onPressed: busy ? null : _createAccount,
                         label: 'Create an account',
                       ),
@@ -205,25 +198,6 @@ class _AuthScreenState extends State<AuthScreen> {
       ),
     );
   }
-
-  InputDecoration _fieldDecoration({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      floatingLabelBehavior: FloatingLabelBehavior.always,
-      labelStyle: const TextStyle(color: _LoginColors.muted, fontSize: 14),
-      prefixIcon: Icon(icon, color: _LoginColors.muted, size: 20),
-      border: InputBorder.none,
-      enabledBorder: InputBorder.none,
-      focusedBorder: InputBorder.none,
-      errorBorder: InputBorder.none,
-      focusedErrorBorder: InputBorder.none,
-      disabledBorder: InputBorder.none,
-      contentPadding: const EdgeInsets.symmetric(vertical: 14),
-    );
-  }
 }
 
 class _BrandCard extends StatelessWidget {
@@ -234,7 +208,7 @@ class _BrandCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: _LoginColors.tint,
+        color: AuthColors.tint,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -242,7 +216,7 @@ class _BrandCard extends StatelessWidget {
           const Icon(
             Icons.verified_user_outlined,
             size: 36,
-            color: _LoginColors.primary,
+            color: AuthColors.primary,
           ),
           const SizedBox(width: 14),
           Flexible(
@@ -252,7 +226,7 @@ class _BrandCard extends StatelessWidget {
                 Text(
                   'MedFollow',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: _LoginColors.heading,
+                        color: AuthColors.heading,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -261,112 +235,12 @@ class _BrandCard extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
-                      ?.copyWith(color: _LoginColors.muted),
+                      ?.copyWith(color: AuthColors.muted),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FieldCard extends StatelessWidget {
-  const _FieldCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _LoginColors.fieldBorder),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class _TonalButton extends StatelessWidget {
-  const _TonalButton({
-    required this.onPressed,
-    required this.label,
-    this.icon,
-  });
-
-  final VoidCallback? onPressed;
-  final String label;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          backgroundColor: _LoginColors.tint,
-          foregroundColor: _LoginColors.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (icon != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Icon(icon, size: 20),
-              ),
-            Text(label),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      liveRegion: true,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: scheme.errorContainer,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.error_outline, color: scheme.onErrorContainer),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: TextStyle(color: scheme.onErrorContainer),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

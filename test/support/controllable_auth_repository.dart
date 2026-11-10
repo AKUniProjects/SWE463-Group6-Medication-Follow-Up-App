@@ -57,6 +57,9 @@ class ControllableAuthRepository implements AuthRepository {
 
   int signInCalls = 0;
   String? lastSignInEmail;
+  int signUpCalls = 0;
+  UserRole? lastSignUpRole;
+  String? lastSignUpName;
 
   @override
   Future<UserProfile> signUp({
@@ -65,6 +68,9 @@ class ControllableAuthRepository implements AuthRepository {
     required String password,
     required UserRole role,
   }) {
+    signUpCalls++;
+    lastSignUpRole = role;
+    lastSignUpName = displayName;
     pendingAction = Completer<UserProfile>();
     return pendingAction!.future;
   }
