@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:medication_follow_up_app/main.dart';
 import 'package:medication_follow_up_app/models/user_profile.dart';
 import 'package:medication_follow_up_app/screens/auth_screen.dart';
 import 'package:medication_follow_up_app/screens/doctor_dashboard_screen.dart';
 import 'package:medication_follow_up_app/screens/patient_home_screen.dart';
 import 'package:medication_follow_up_app/services/auth_repository.dart';
 import 'package:medication_follow_up_app/state/auth_provider.dart';
-import 'package:provider/provider.dart';
 
+import 'support/app_providers.dart';
 import 'support/controllable_auth_repository.dart';
 
 void main() {
@@ -42,10 +41,7 @@ void main() {
     auth.dispose();
     auth = AuthProvider(repo)..start();
     await tester.pumpWidget(
-      ChangeNotifierProvider<AuthProvider>.value(
-        value: auth,
-        child: const MedicationFollowUpApp(),
-      ),
+      appWithProviders(auth),
     );
   }
 

@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/user_profile.dart';
 import '../services/sample_data.dart';
 import '../state/auth_provider.dart';
-import 'doctor_dashboard_screen.dart';
+import 'doctor_code_dialog.dart';
+import 'linked_patients_dashboard.dart';
 import 'medications_screen.dart';
 import 'patient_home_screen.dart';
 
@@ -22,7 +23,7 @@ class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
   late final List<Widget> _pages = widget.role == UserRole.doctor
-      ? [DoctorDashboardScreen(patients: SampleData.patientSummaries)]
+      ? [const LinkedPatientsDashboard()] // real linked patients (Task 3.6)
       : [
           PatientHomeScreen(
             medications: SampleData.medications,
@@ -60,8 +61,13 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
-          // Last destination is sign out, not a page.
-          if (index == _pages.length) {
+          // Destinations after the pages are actions, not pages.
+          final isDoctor = widget.role == UserRole.doctor;
+          if (isDoctor && index == _pages.length) {
+            showDoctorCodeDialog(context);
+            return;
+          }
+          if (index == _pages.length + (isDoctor ? 1 : 0)) {
             context.read<AuthProvider>().signOut();
             return;
           }
@@ -71,6 +77,11 @@ class _AppShellState extends State<AppShell> {
         },
         destinations: [
           ..._destinations,
+          if (widget.role == UserRole.doctor)
+            const NavigationDestination(
+              icon: Icon(Icons.qr_code_2_outlined),
+              label: 'Linking code',
+            ),
           const NavigationDestination(
             icon: Icon(Icons.logout),
             label: 'Sign out',

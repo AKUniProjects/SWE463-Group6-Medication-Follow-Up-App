@@ -1,17 +1,53 @@
 rules_version = '2';
 
-// MedFollow Firestore rules (Task 2.6A).
+// MedFollow Firestore rules (Tasks 2.6A and 3.2).
 //
-// Only `users/{uid}` profiles are allowed for now; every other path is
-// denied by default. A self-declared "doctor" role grants nothing extra:
-// doctor access to patient data must come from verified doctor-patient
-// links, which a later task will add.
+// COURSEWORK PROTOTYPE - fictional data only. Users self-select the Doctor
+// role at registration; that is NOT professional verification, and these
+// rules are not production-ready for real medical data.
+//
+// Doctor access to a patient comes only from an active
+// doctorLinks/{patientId}_{doctorId} document created by the patient.
+// UserProfile.linkedDoctorIds is never used for authorization.
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return request.auth.uid;
+    }
+
+    function profile(id) {
+      return get(/databases/$(database)/documents/users/$(id)).data;
+    }
+
+    function hasActiveLink(patientId, doctorId) {
+      let path = /databases/$(database)/documents/doctorLinks/$(patientId + '_' + doctorId);
+      return exists(path) && get(path).data.status == 'active';
+    }
+
+    // A code is usable if it exists, belongs to the doctor, is active, and
+    // is less than 30 days old (server creation time).
+    function codeUsable(code, doctorId) {
+      let path = /databases/$(database)/documents/doctorCodes/$(code);
+      let c = get(path).data;
+      return exists(path)
+        && c.doctorId == doctorId
+        && c.active == true
+        && request.time < c.createdAt + duration.value(30, 'd');
+    }
+
+    // True when the code's server creation time is after [time].
+    function codeIssuedAfter(code, time) {
+      return get(/databases/$(database)/documents/doctorCodes/$(code)).data.createdAt > time;
+    }
+
     match /users/{uid} {
       function isOwner() {
-        return request.auth != null && request.auth.uid == uid;
+        return signedIn() && me() == uid;
       }
 
       // Matches UserProfile.toMap(): displayName, email, role,
@@ -29,15 +65,17 @@ service cloud.firestore {
           && data.linkedDoctorIds is list;
       }
 
-      allow read: if isOwner();
+      // Owner, or a doctor with an active link to this patient. Linked
+      // doctors read single profiles by ID (no list access).
+      allow get: if isOwner() || (signedIn() && hasActiveLink(uid, me()));
+      allow list: if isOwner();
 
       // Own profile only, and no pre-linked doctors at registration.
       allow create: if isOwner()
         && isValidProfile(request.resource.data)
         && request.resource.data.linkedDoctorIds.size() == 0;
 
-      // Clients may only change their display name. Role and doctor links
-      // are immutable from the client.
+      // Owner may only change their display name; doctors can never write.
       allow update: if isOwner()
         && isValidProfile(request.resource.data)
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -46,7 +84,92 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Everything else stays closed until a feature defines its own rules.
+    // doctorCodes/{code}: { doctorId, doctorName, active, createdAt }
+    match /doctorCodes/{code} {
+      // Any signed-in user may look up one code by ID; codes cannot be
+      // enumerated. Doctors may list only their own codes.
+      allow get: if signedIn();
+      allow list: if signedIn() && resource.data.doctorId == me();
+
+      allow create: if signedIn()
+        && code.matches('^[A-HJ-NP-Z2-9]{10}$')
+        && profile(me()).role == 'doctor'
+        && request.resource.data.keys().hasOnly(['doctorId', 'doctorName', 'active', 'createdAt'])
+        && request.resource.data.keys().hasAll(['doctorId', 'doctorName', 'active', 'createdAt'])
+        && request.resource.data.doctorId == me()
+        && request.resource.data.doctorName == profile(me()).displayName
+        && request.resource.data.active == true
+        && request.resource.data.createdAt == request.time;
+
+      // Owner may only deactivate (one-way).
+      allow update: if signedIn()
+        && resource.data.doctorId == me()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active'])
+        && request.resource.data.active == false;
+
+      allow delete: if signedIn() && resource.data.doctorId == me();
+    }
+
+    // doctorLinks/{patientId}_{doctorId}:
+    // { patientId, doctorId, patientName, doctorName, linkCode, status,
+    //   consentedAt, [revokedAt, revokedBy] }
+    match /doctorLinks/{linkId} {
+      // Fresh patient consent with a usable code. Used for both creation
+      // and reactivation, so only the patient can (re)activate a link.
+      function isConsentedActiveLink(d) {
+        return d.keys().hasOnly(['patientId', 'doctorId', 'patientName', 'doctorName', 'linkCode', 'status', 'consentedAt'])
+          && d.keys().hasAll(['patientId', 'doctorId', 'patientName', 'doctorName', 'linkCode', 'status', 'consentedAt'])
+          && d.patientId == me()
+          && d.doctorId is string
+          && d.doctorId != me()
+          && linkId == d.patientId + '_' + d.doctorId
+          && profile(me()).role == 'patient'
+          && profile(d.doctorId).role == 'doctor'
+          && d.patientName == profile(me()).displayName
+          && d.doctorName == profile(d.doctorId).displayName
+          && d.status == 'active'
+          && d.consentedAt == request.time
+          && d.linkCode is string
+          && codeUsable(d.linkCode, d.doctorId);
+      }
+
+      function isParty(d) {
+        return signedIn() && (d.patientId == me() || d.doctorId == me());
+      }
+
+      // Parties only. Queries must filter on patientId == me or
+      // doctorId == me.
+      allow read: if isParty(resource.data);
+
+      allow create: if signedIn() && isConsentedActiveLink(request.resource.data);
+
+      allow update: if signedIn() && (
+        // Revocation by either party: active -> revoked, identities fixed.
+        (resource.data.status == 'active'
+          && isParty(resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'revokedAt', 'revokedBy'])
+          && request.resource.data.status == 'revoked'
+          && request.resource.data.revokedAt == request.time
+          && request.resource.data.revokedBy == me())
+        ||
+        // Reactivation by the patient only: revoked -> active with a
+        // usable code and fresh consent (revocation fields removed).
+        // If the DOCTOR revoked, the code must have been issued after that
+        // revocation, so the doctor's decision cannot be undone with an
+        // older code.
+        (resource.data.status == 'revoked'
+          && resource.data.patientId == me()
+          && isConsentedActiveLink(request.resource.data)
+          && (resource.data.revokedBy == resource.data.patientId
+              || codeIssuedAfter(request.resource.data.linkCode, resource.data.revokedAt)))
+      );
+
+      allow delete: if false;
+    }
+
+    // Everything else (medications, dose records, ...) stays closed until
+    // each feature defines its own rules.
     match /{document=**} {
       allow read, write: if false;
     }

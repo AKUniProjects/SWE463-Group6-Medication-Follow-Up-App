@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/dose_record.dart';
 import '../models/medication.dart';
 import '../widgets/status_chip.dart';
+import 'doctor_linking_screen.dart';
 
 class PatientHomeScreen extends StatelessWidget {
   const PatientHomeScreen({
@@ -20,6 +21,16 @@ class PatientHomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Today'),
         actions: [
+          // Doctor Linking shortcut (Task 3.5B).
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const DoctorLinkingScreen(),
+              ),
+            ),
+            tooltip: 'Link a doctor',
+            icon: const Icon(Icons.people_alt_outlined),
+          ),
           IconButton(
             onPressed: () {},
             tooltip: 'Notifications',

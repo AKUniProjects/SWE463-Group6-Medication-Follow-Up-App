@@ -40,6 +40,50 @@ Current limitations:
 - A self-selected Doctor role is **not** professional verification and grants no access to patient records.
 - `patient_home_screen.dart` has a known 40-pixel layout overflow.
 
+## Doctor Linking Data Contract (Task 3.2 — rules only)
+
+> Coursework prototype with fictional data. Doctor self-registration is allowed but is **not** professional verification, and this design is **not** production-ready for real medical data.
+
+The authoritative relationship is `doctorLinks/{patientId}_{doctorId}`. `UserProfile.linkedDoctorIds` is not used for authorization and stays empty.
+
+| Collection | Fields | Who can do what |
+|---|---|---|
+| `doctorCodes/{code}` | `doctorId`, `doctorName`, `active`, `createdAt` (server time) | Doctor creates own code (10 chars from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, name must match their profile); valid 30 days; owner may deactivate or delete. Signed-in users may `get` one code; only the owner may list (`where doctorId == myUid`). |
+| `doctorLinks/{patientId}_{doctorId}` | `patientId`, `doctorId`, `patientName`, `doctorName`, `linkCode`, `status` (`active`/`revoked`), `consentedAt` (server time), `revokedAt`, `revokedBy` | Only the patient creates or reactivates, with a valid code and fresh consent. Either party revokes. Doctors cannot reactivate. After a patient revocation, any valid code from that doctor works; after a **doctor** revocation, the patient needs a code the doctor issued **after** the revocation. No deletes. |
+
+Queries for teammates (other queries are denied):
+
+- Doctor's patients: `doctorLinks.where('doctorId', isEqualTo: myUid).where('status', isEqualTo: 'active')` (or only the `doctorId` filter, then filter `status` in Dart). Every query **must** include `doctorId == myUid` or `patientId == myUid`; Security Rules are not filters, so queries without that constraint are rejected.
+- Patient's doctors: `doctorLinks.where('patientId', isEqualTo: myUid)`.
+- Patient profile for a linked doctor: `users.doc(patientId).get()` by ID only (no `users` queries). Access ends when the link is revoked.
+
+All of the above were verified against the Firestore emulator (`firestore_rules_test/doctor_linking_rules.test.mjs`).
+
+Code format: stored codes are exactly 10 characters from the 32-symbol alphabet above (50 bits), with no spaces or hyphens. The app may display them as `ABCD-EFGH-23`, and must normalize user input with `normalizeDoctorCode()` before lookup. Expiry is `createdAt + 30 days`; there is no stored `expiresAt`, and `createdAt` cannot be changed after creation.
+
+Timestamps `createdAt`, `consentedAt`, and `revokedAt` must be written as `FieldValue.serverTimestamp()`; client-chosen times are rejected. See the write contract at the top of `lib/models/doctor_link.dart`.
+
+Known limitations of this prototype:
+
+- Doctors self-register and are not professionally verified; patient consent (creating the link) is required before any doctor access.
+- Codes cannot be listed by patients, but guessing single codes is not server-rate-limited (Firestore-only design, no Cloud Functions).
+- The rules record that the patient performed the link operation; they cannot prove the patient read an explanation. The consent screen is planned for Task 3.5.
+- Revocation blocks later authorized reads, but data already received or cached on a device cannot be recalled.
+- Doctor access to medications, dose history, and adherence needs future rules; those collections remain denied.
+- These rules have only been tested on the local emulator and have **not** been deployed to the live Firebase project.
+
+Requirements for Task 3.3 (repository): generate codes with `Random.secure()` over `doctorCodeAlphabet`; create codes with a "must not exist" write and retry on collision; use server timestamps as above; revoke with an update of `status`, `revokedBy`, and `revokedAt` only.
+
+### Doctor Dashboard integration (Task 3.6)
+
+The doctor shell now feeds the existing `DoctorDashboardScreen` (unchanged) with real linked patients through `lib/screens/linked_patients_dashboard.dart`:
+
+- Data: `DoctorLinkProvider.loadLinkedPatients()` / `linkedPatients` (`List<LinkedPatient>`: `patientId`, `displayName`, `email`, `link`). Only active links and rule-authorized profiles are returned; sign-out or switching accounts clears the list.
+- Mapping: `toPatientSummary(LinkedPatient)` sets `PatientSummary.patientId` to the patient's Firebase UID (used by `PatientDetailsScreen`). Statistics are empty ("No dose records yet") until the dashboard owner supplies real adherence data.
+- Refresh: pull down on the patient list (touch or mouse) to re-check links; revoked patients disappear. When the list is empty the dashboard's empty state is not scrollable, so new links appear after reload or the next sign-in (the dashboard owner may add a refresh action).
+- Doctor revocation: `DoctorLinkProvider.revokePatientLink(LinkedPatient)` is available but not yet shown in the dashboard UI (needs a confirmation dialog in the dashboard owner's design). After a doctor revokes, the patient needs a code issued after the revocation.
+- Medications and dose records: future rules must use the same active-link check (`doctorLinks/{patientId}_{doctorId}` with `status == 'active'`), patient writes only.
+
 ## Development Setup (Windows PowerShell)
 
 ### Required tools
@@ -112,7 +156,7 @@ flutter test
 Firestore Security Rules tests (run inside a temporary Firestore emulator; no npm install needed):
 
 ```powershell
-npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test firestore_rules_test/users_rules.test.mjs"
+npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs"
 ```
 
 ### Manual emulator test checklist
