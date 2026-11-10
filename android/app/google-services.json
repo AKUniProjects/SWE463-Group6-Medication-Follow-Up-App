@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "406662587347",
+    "project_id": "swe463-group06-medication-app",
+    "storage_bucket": "swe463-group06-medication-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:406662587347:android:ba015ec5ca6c7575454526",
+        "android_client_info": {
+          "package_name": "com.example.medication_follow_up_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEDVwKGG0Ul99bLs1d6SttBxKBz0FGKGQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
