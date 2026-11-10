@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'firebase_emulators.dart';
 import 'firebase_options.dart';
 import 'screens/auth_gate.dart';
 import 'services/firebase_auth_repository.dart';
@@ -14,6 +15,11 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Development-only: connect to local emulators when explicitly enabled.
+  if (kUseFirebaseEmulators) {
+    await connectToFirebaseEmulators();
+  }
 
   // Provide shared authentication state to the application.
   runApp(

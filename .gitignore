@@ -13,3 +13,8 @@ build/
 .vscode/
 
 # Generated platform files can be committed after `flutter create .`.
+
+# Firebase emulator logs
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
