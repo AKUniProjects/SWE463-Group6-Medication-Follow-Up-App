@@ -277,6 +277,37 @@ class FirebaseDoctorLinkRepository implements DoctorLinkRepository {
   Future<List<DoctorLink>> linksForDoctor({bool activeOnly = true}) =>
       _run(() async => _links('doctorId', _requireUid(), activeOnly));
 
+  @override
+  Future<List<LinkedPatient>> linkedPatientsForDoctor() => _run(() async {
+        final uid = _requireUid();
+        await _requireRole(uid, 'doctor');
+        // Approved contract: doctorLinks where doctorId == uid, active only,
+        // then each profile by document ID (never a users query).
+        final links = await _links('doctorId', uid, true);
+        final patients = <LinkedPatient>[];
+        for (final link in links) {
+          Map<String, dynamic>? profile;
+          try {
+            profile = await _store.readProfile(link.patientId);
+          } on DoctorLinkException catch (e) {
+            // Revoked between the query and the read: skip, don't expose.
+            if (e.code == DoctorLinkErrorCode.permissionDenied) continue;
+            rethrow;
+          }
+          if (profile == null) continue;
+          patients.add(
+            LinkedPatient(
+              link: link,
+              displayName:
+                  profile['displayName'] as String? ?? link.patientName,
+              email: profile['email'] as String? ?? '',
+            ),
+          );
+        }
+        patients.sort((a, b) => a.displayName.compareTo(b.displayName));
+        return patients;
+      });
+
   // ----------------------------------------------------------- patient
 
   @override

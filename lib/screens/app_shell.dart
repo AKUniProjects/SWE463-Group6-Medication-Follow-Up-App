@@ -5,7 +5,7 @@ import '../models/user_profile.dart';
 import '../services/sample_data.dart';
 import '../state/auth_provider.dart';
 import 'doctor_code_dialog.dart';
-import 'doctor_dashboard_screen.dart';
+import 'linked_patients_dashboard.dart';
 import 'medications_screen.dart';
 import 'patient_home_screen.dart';
 
@@ -23,7 +23,7 @@ class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
   late final List<Widget> _pages = widget.role == UserRole.doctor
-      ? [DoctorDashboardScreen(patients: SampleData.patientSummaries)]
+      ? [const LinkedPatientsDashboard()] // real linked patients (Task 3.6)
       : [
           PatientHomeScreen(
             medications: SampleData.medications,

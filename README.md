@@ -74,6 +74,16 @@ Known limitations of this prototype:
 
 Requirements for Task 3.3 (repository): generate codes with `Random.secure()` over `doctorCodeAlphabet`; create codes with a "must not exist" write and retry on collision; use server timestamps as above; revoke with an update of `status`, `revokedBy`, and `revokedAt` only.
 
+### Doctor Dashboard integration (Task 3.6)
+
+The doctor shell now feeds the existing `DoctorDashboardScreen` (unchanged) with real linked patients through `lib/screens/linked_patients_dashboard.dart`:
+
+- Data: `DoctorLinkProvider.loadLinkedPatients()` / `linkedPatients` (`List<LinkedPatient>`: `patientId`, `displayName`, `email`, `link`). Only active links and rule-authorized profiles are returned; sign-out or switching accounts clears the list.
+- Mapping: `toPatientSummary(LinkedPatient)` sets `PatientSummary.patientId` to the patient's Firebase UID (used by `PatientDetailsScreen`). Statistics are empty ("No dose records yet") until the dashboard owner supplies real adherence data.
+- Refresh: pull down on the patient list (touch or mouse) to re-check links; revoked patients disappear. When the list is empty the dashboard's empty state is not scrollable, so new links appear after reload or the next sign-in (the dashboard owner may add a refresh action).
+- Doctor revocation: `DoctorLinkProvider.revokePatientLink(LinkedPatient)` is available but not yet shown in the dashboard UI (needs a confirmation dialog in the dashboard owner's design). After a doctor revokes, the patient needs a code issued after the revocation.
+- Medications and dose records: future rules must use the same active-link check (`doctorLinks/{patientId}_{doctorId}` with `status == 'active'`), patient writes only.
+
 ## Development Setup (Windows PowerShell)
 
 ### Required tools

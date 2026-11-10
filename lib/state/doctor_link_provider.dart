@@ -87,6 +87,83 @@ class DoctorLinkProvider extends ChangeNotifier {
     _isBusy = false;
     _errorMessage = null;
     _clearPatientState();
+    _clearLinkedPatients();
+  }
+
+  // ============================================ doctor: linked patients
+  //
+  // Data source for the Doctor Dashboard (Task 3.6). Only ACTIVE links and
+  // rule-authorized profiles are returned by the repository.
+
+  List<LinkedPatient> _linkedPatients = const [];
+  bool _hasLoadedLinkedPatients = false;
+  bool _isLoadingLinkedPatients = false;
+  String? _linkedPatientsError;
+
+  List<LinkedPatient> get linkedPatients => _linkedPatients;
+  bool get hasLoadedLinkedPatients => _hasLoadedLinkedPatients;
+  bool get isLoadingLinkedPatients => _isLoadingLinkedPatients;
+  String? get linkedPatientsError => _linkedPatientsError;
+
+  /// Loads (or refreshes) the signed-in doctor's linked patients.
+  Future<bool> loadLinkedPatients() async {
+    if (!canManageCodes) {
+      _linkedPatientsError =
+          const DoctorLinkException(DoctorLinkErrorCode.notDoctor).message;
+      _notify();
+      return false;
+    }
+    if (_isLoadingLinkedPatients) return false;
+    final session = _session;
+    _isLoadingLinkedPatients = true;
+    _linkedPatientsError = null;
+    _notify();
+    try {
+      final patients = await _repository.linkedPatientsForDoctor();
+      if (session != _session) return false;
+      _linkedPatients = List.unmodifiable(patients);
+      _hasLoadedLinkedPatients = true;
+      return true;
+    } catch (e) {
+      if (session != _session) return false;
+      _linkedPatientsError = _messageFor(e); // previous list is kept
+      return false;
+    } finally {
+      if (session == _session) {
+        _isLoadingLinkedPatients = false;
+        _notify();
+      }
+    }
+  }
+
+  /// Doctor-side revocation (interface for the dashboard owner). After a
+  /// doctor revokes, the patient needs a code issued after the revocation.
+  Future<bool> revokePatientLink(LinkedPatient patient) async {
+    if (!canManageCodes || _isBusy) return false;
+    final session = _session;
+    _isBusy = true;
+    _linkedPatientsError = null;
+    _notify();
+    try {
+      await _repository.revokeLink(patient.link);
+      if (session != _session) return false;
+      _isBusy = false;
+      await loadLinkedPatients();
+      return true;
+    } catch (e) {
+      if (session != _session) return false;
+      _isBusy = false;
+      _linkedPatientsError = _messageFor(e);
+      _notify();
+      return false;
+    }
+  }
+
+  void _clearLinkedPatients() {
+    _linkedPatients = const [];
+    _hasLoadedLinkedPatients = false;
+    _isLoadingLinkedPatients = false;
+    _linkedPatientsError = null;
   }
 
   // ===================================================== patient linking

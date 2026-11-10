@@ -33,9 +33,14 @@ class FakeStore implements DoctorLinkStore {
 
   Map<String, dynamic>? lastWrite;
 
+  final deniedProfiles = <String>{};
+
   @override
   Future<Map<String, dynamic>?> readProfile(String uid) async {
     _maybeFail();
+    if (deniedProfiles.contains(uid)) {
+      throw const DoctorLinkException(DoctorLinkErrorCode.permissionDenied);
+    }
     return profiles[uid];
   }
 
@@ -355,6 +360,61 @@ void main() {
       uid = null;
       expect(repo().linksForPatient(),
           throwsLink(DoctorLinkErrorCode.notSignedIn));
+    });
+  });
+
+  group('doctor dashboard data (Task 3.6)', () {
+    void seedLink(String patient, String status) {
+      store.profiles[patient] = {
+        'displayName': 'Name $patient',
+        'email': '$patient@example.com',
+        'role': 'patient',
+      };
+      store.links['${patient}_doc'] = {
+        'patientId': patient,
+        'doctorId': 'doc',
+        'patientName': 'Name $patient',
+        'doctorName': 'Dr Test',
+        'linkCode': 'ABCDEFGH23',
+        'status': status,
+      };
+    }
+
+    test('returns only active links with readable profiles', () async {
+      seedLink('p2', 'active');
+      seedLink('p1', 'active');
+      seedLink('p3', 'revoked');
+      uid = 'doc';
+      final patients = await repo().linkedPatientsForDoctor();
+
+      expect(patients.map((p) => p.patientId), ['p1', 'p2']); // sorted
+      expect(patients.first.displayName, 'Name p1');
+      expect(store.queries, contains('doctorLinks.doctorId==doc'));
+      expect(store.queries.where((q) => q.startsWith('users')), isEmpty);
+    });
+
+    test('skips profiles the rules deny (revoked meanwhile)', () async {
+      seedLink('p1', 'active');
+      seedLink('p2', 'active');
+      store.deniedProfiles.add('p2');
+      uid = 'doc';
+      final patients = await repo().linkedPatientsForDoctor();
+      expect(patients.single.patientId, 'p1');
+    });
+
+    test('empty, non-doctor and network failures', () async {
+      uid = 'doc';
+      expect(await repo().linkedPatientsForDoctor(), isEmpty);
+
+      uid = 'pat';
+      await expectLater(repo().linkedPatientsForDoctor(),
+          throwsLink(DoctorLinkErrorCode.notDoctor));
+
+      seedLink('p1', 'active');
+      uid = 'doc';
+      store.failNext = const DoctorLinkException(DoctorLinkErrorCode.network);
+      await expectLater(repo().linkedPatientsForDoctor(),
+          throwsLink(DoctorLinkErrorCode.network));
     });
   });
 }

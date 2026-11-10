@@ -48,6 +48,31 @@ abstract class DoctorLinkRepository {
 
   /// Revokes an active link the signed-in user belongs to.
   Future<void> revokeLink(DoctorLink link);
+
+  // ----- Doctor dashboard (Task 3.6) -----
+
+  /// Patients with an ACTIVE link to the signed-in doctor, each with the
+  /// profile the Security Rules allow that doctor to read. Profiles that
+  /// can no longer be read (for example revoked in the meantime) are
+  /// skipped, never exposed.
+  Future<List<LinkedPatient>> linkedPatientsForDoctor();
+}
+
+/// A patient the signed-in doctor is currently authorized to view.
+class LinkedPatient {
+  const LinkedPatient({
+    required this.link,
+    required this.displayName,
+    required this.email,
+  });
+
+  final DoctorLink link;
+  final String displayName;
+  final String email;
+
+  /// Firebase Auth UID of the patient; use this for detail navigation and
+  /// for future per-patient queries (medications, dose records).
+  String get patientId => link.patientId;
 }
 
 enum DoctorLinkErrorCode {
