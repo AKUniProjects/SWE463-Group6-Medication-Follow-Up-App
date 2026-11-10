@@ -36,7 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     FocusScope.of(context).unfocus();
     await auth.signIn(
-      email: _emailController.text,
+      email: _emailController.text.trim(),
       password: _passwordController.text,
     );
   }
@@ -54,6 +54,9 @@ class _AuthScreenState extends State<AuthScreen> {
     // Don't carry a sign-up error back onto the login form.
     if (mounted) auth.clearActionError();
   }
+
+  // Hide an outdated authentication error once the user edits the form.
+  void _clearAuthError() => context.read<AuthProvider>().clearActionError();
 
   @override
   Widget build(BuildContext context) {
@@ -105,14 +108,8 @@ class _AuthScreenState extends State<AuthScreen> {
                             label: 'Email',
                             icon: Icons.people_outline,
                           ),
-                          validator: (value) {
-                            final email = value?.trim() ?? '';
-                            if (email.isEmpty) return 'Enter your email';
-                            if (!email.contains('@') || !email.contains('.')) {
-                              return 'Enter a valid email address';
-                            }
-                            return null;
-                          },
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthEmail,
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -130,15 +127,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Enter your password';
-                            }
-                            if (value.length < 6) {
-                              return 'Use at least 6 characters';
-                            }
-                            return null;
-                          },
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthPassword,
                         ),
                       ),
                       const SizedBox(height: 14),

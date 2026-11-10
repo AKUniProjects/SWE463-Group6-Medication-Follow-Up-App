@@ -40,14 +40,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     FocusScope.of(context).unfocus();
     final ok = await auth.signUp(
-      displayName: _nameController.text,
-      email: _emailController.text,
+      displayName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
       password: _passwordController.text,
       role: _role,
     );
     // Reveal AuthGate, which now shows the role-specific interface.
     if (ok && mounted) Navigator.of(context).pop();
   }
+
+  // Hide an outdated authentication error once the user edits the form.
+  void _clearAuthError() => context.read<AuthProvider>().clearActionError();
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +124,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         role: _role,
                         onChanged: busy
                             ? null
-                            : (role) => setState(() => _role = role),
+                            : (role) {
+                                _clearAuthError();
+                                setState(() => _role = role);
+                              },
                       ),
                       const SizedBox(height: 14),
                       AuthFieldCard(
@@ -135,12 +141,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             label: 'Full name',
                             icon: Icons.people_outline,
                           ),
-                          validator: (value) {
-                            final name = value?.trim() ?? '';
-                            if (name.isEmpty) return 'Enter your full name';
-                            if (name.length < 2) return 'Name is too short';
-                            return null;
-                          },
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthName,
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -155,14 +157,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             label: 'Email',
                             icon: Icons.people_outline,
                           ),
-                          validator: (value) {
-                            final email = value?.trim() ?? '';
-                            if (email.isEmpty) return 'Enter your email';
-                            if (!email.contains('@') || !email.contains('.')) {
-                              return 'Enter a valid email address';
-                            }
-                            return null;
-                          },
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthEmail,
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -194,15 +190,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Enter a password';
-                            }
-                            if (value.length < 6) {
-                              return 'Use at least 6 characters';
-                            }
-                            return null;
-                          },
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthPassword,
                         ),
                       ),
                       if (error != null) ...[

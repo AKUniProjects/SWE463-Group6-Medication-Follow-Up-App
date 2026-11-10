@@ -10,6 +10,42 @@ class AuthColors {
   static const primary = Color(0xFF176B9A);
   static const tint = Color(0xFFE6F2F8);
   static const fieldBorder = Color(0xFFDCE6EC);
+
+  /// Muted dark red for field messages (about 7:1 contrast on white).
+  static const errorText = Color(0xFF8A3B3B);
+  static const bannerBorder = Color(0xFFC9DDE8);
+}
+
+/// Shared form rules so Login and Sign Up validate identically.
+const int kMinPasswordLength = 6;
+const int kMaxNameLength = 100;
+
+// Deliberately permissive: one "@", no spaces, a dot in the domain.
+// Firebase performs the authoritative check.
+final RegExp _emailPattern = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
+String? validateAuthEmail(String? value) {
+  final email = value?.trim() ?? '';
+  if (email.isEmpty) return 'Enter your email';
+  if (!_emailPattern.hasMatch(email)) return 'Enter a valid email address';
+  return null;
+}
+
+String? validateAuthPassword(String? value) {
+  if (value == null || value.isEmpty) return 'Enter your password';
+  if (value.length < kMinPasswordLength) {
+    return 'Use at least $kMinPasswordLength characters';
+  }
+  return null;
+}
+
+String? validateAuthName(String? value) {
+  final name = value?.trim() ?? '';
+  if (name.isEmpty) return 'Enter your full name';
+  if (name.length > kMaxNameLength) {
+    return 'Use $kMaxNameLength characters or fewer';
+  }
+  return null;
 }
 
 /// Borderless field decoration used inside [AuthFieldCard].
@@ -28,6 +64,13 @@ InputDecoration authFieldDecoration({
     errorBorder: InputBorder.none,
     focusedErrorBorder: InputBorder.none,
     disabledBorder: InputBorder.none,
+    // Subtle, readable field errors instead of bright red.
+    errorStyle: const TextStyle(
+      color: AuthColors.errorText,
+      fontSize: 12.5,
+      fontWeight: FontWeight.w500,
+    ),
+    errorMaxLines: 2,
     contentPadding: const EdgeInsets.symmetric(vertical: 14),
   );
 }
@@ -107,23 +150,36 @@ class AuthErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    // Soft light-blue banner with navy text; the icon and wording carry the
+    // meaning, so it does not rely on color alone.
     return Semantics(
       liveRegion: true,
+      label: 'Error: $message',
+      excludeSemantics: true,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: scheme.errorContainer,
+          color: AuthColors.tint,
+          border: Border.all(color: AuthColors.bannerBorder),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.error_outline, color: scheme.onErrorContainer),
-            const SizedBox(width: 10),
+            const Icon(
+              Icons.info_outline,
+              size: 18,
+              color: AuthColors.primary,
+            ),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 message,
-                style: TextStyle(color: scheme.onErrorContainer),
+                style: const TextStyle(
+                  color: AuthColors.heading,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],

@@ -76,7 +76,7 @@ void main() {
     await tester.pump();
     expect(find.text('Enter your full name'), findsOneWidget);
     expect(find.text('Enter your email'), findsOneWidget);
-    expect(find.text('Enter a password'), findsOneWidget);
+    expect(find.text('Enter your password'), findsOneWidget);
 
     await tester.enterText(field('Email'), 'bad-email');
     await tester.tap(createButton('patient'));
