@@ -6,7 +6,9 @@ import 'firebase_emulators.dart';
 import 'firebase_options.dart';
 import 'screens/auth_gate.dart';
 import 'services/firebase_auth_repository.dart';
+import 'services/firebase_doctor_link_repository.dart';
 import 'state/auth_provider.dart';
+import 'state/doctor_link_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,11 +25,26 @@ Future<void> main() async {
 
   // Provide shared authentication state to the application.
   runApp(
-    ChangeNotifierProvider<AuthProvider>(
-      lazy: false,
-      create: (_) => AuthProvider(
-        FirebaseAuthRepository(),
-      )..start(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>(
+          lazy: false,
+          create: (_) => AuthProvider(
+            FirebaseAuthRepository(),
+          )..start(),
+        ),
+        // Doctor-code state follows the signed-in user: it is cleared on
+        // sign-out or account switch. Only verified-profile doctors may act.
+        ChangeNotifierProxyProvider<AuthProvider, DoctorLinkProvider>(
+          create: (_) => DoctorLinkProvider(FirebaseDoctorLinkRepository()),
+          update: (_, auth, links) => links!
+            ..updateSession(
+              uid: auth.isAuthenticated ? auth.userId : null,
+              isDoctor: auth.isDoctor,
+              isPatient: auth.isPatient,
+            ),
+        ),
+      ],
       child: const MedicationFollowUpApp(),
     ),
   );
