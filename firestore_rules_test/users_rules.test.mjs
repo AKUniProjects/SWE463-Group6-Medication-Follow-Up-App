@@ -3,7 +3,7 @@
 // emulator REST API, so every check is a real rules evaluation.
 //
 // Run from the project root:
-//   npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test firestore_rules_test/users_rules.test.mjs"
+//   npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs"
 
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
