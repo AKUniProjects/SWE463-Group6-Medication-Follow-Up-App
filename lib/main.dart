@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
-import 'screens/app_shell.dart';
-import 'screens/auth_screen.dart';
+import 'screens/auth_gate.dart';
 import 'services/firebase_auth_repository.dart';
 import 'state/auth_provider.dart';
 
@@ -43,10 +42,12 @@ class MedicationFollowUpApp extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
       ),
-      home: const AuthScreen(),
-      routes: {
-        '/app': (_) => const AppShell(),
-      },
+      // Every route goes through the gate, so no URL or named route can
+      // bypass authentication or role checks.
+      home: const AuthGate(),
+      onGenerateRoute: (_) => MaterialPageRoute<void>(
+        builder: (_) => const AuthGate(),
+      ),
     );
   }
 }

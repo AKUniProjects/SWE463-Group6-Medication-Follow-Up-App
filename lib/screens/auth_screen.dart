@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../state/auth_provider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -20,13 +23,24 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _continueToDemoApp() {
+  // Minimal wiring to the provider; final Figma UI is Task 2.3.
+  Future<void> _signIn() async {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.of(context).pushReplacementNamed('/app');
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.signIn(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+    if (!ok && mounted && auth.actionErrorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.actionErrorMessage!)),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final busy = context.watch<AuthProvider>().isBusy;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -96,8 +110,13 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
-                      onPressed: _continueToDemoApp,
-                      child: const Text('Sign in to demo'),
+                      onPressed: busy ? null : _signIn,
+                      child: busy
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Sign in'),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
