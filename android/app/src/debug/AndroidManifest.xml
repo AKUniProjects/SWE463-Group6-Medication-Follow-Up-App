@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Debug builds only: lets the app reach the local Firebase emulators
+         over plain HTTP (10.0.2.2). Release builds are unaffected. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

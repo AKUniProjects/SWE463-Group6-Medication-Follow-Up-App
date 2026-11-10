@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// MedFollow Firestore rules (Task 2.6A).
+//
+// Only `users/{uid}` profiles are allowed for now; every other path is
+// denied by default. A self-declared "doctor" role grants nothing extra:
+// doctor access to patient data must come from verified doctor-patient
+// links, which a later task will add.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+
+      // Matches UserProfile.toMap(): displayName, email, role,
+      // linkedDoctorIds. Limits mirror the app's form validation.
+      function isValidProfile(data) {
+        return data.keys().hasOnly(['displayName', 'email', 'role', 'linkedDoctorIds'])
+          && data.keys().hasAll(['displayName', 'email', 'role', 'linkedDoctorIds'])
+          && data.displayName is string
+          && data.displayName.trim().size() > 0
+          && data.displayName.size() <= 100
+          && data.email is string
+          && data.email.size() > 0
+          && data.email.size() <= 254
+          && data.role in ['patient', 'doctor']
+          && data.linkedDoctorIds is list;
+      }
+
+      allow read: if isOwner();
+
+      // Own profile only, and no pre-linked doctors at registration.
+      allow create: if isOwner()
+        && isValidProfile(request.resource.data)
+        && request.resource.data.linkedDoctorIds.size() == 0;
+
+      // Clients may only change their display name. Role and doctor links
+      // are immutable from the client.
+      allow update: if isOwner()
+        && isValidProfile(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['displayName']);
+
+      allow delete: if false;
+    }
+
+    // Everything else stays closed until a feature defines its own rules.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

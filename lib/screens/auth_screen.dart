@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../state/auth_provider.dart';
+import '../widgets/auth_form_widgets.dart';
+import 'sign_up_screen.dart';
+
+/// Login screen (Figma 01 · Login).
+///
+/// After a successful sign-in, [AuthGate] routes by the verified profile
+/// role, so this screen never navigates by itself.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -20,92 +29,157 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _continueToDemoApp() {
+  Future<void> _signIn() async {
+    final auth = context.read<AuthProvider>();
+    auth.clearActionError();
     if (!_formKey.currentState!.validate()) return;
-    Navigator.of(context).pushReplacementNamed('/app');
+
+    FocusScope.of(context).unfocus();
+    await auth.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
   }
+
+  void _togglePassword() {
+    setState(() => _obscurePassword = !_obscurePassword);
+  }
+
+  Future<void> _createAccount() async {
+    final auth = context.read<AuthProvider>();
+    auth.clearActionError();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const SignUpScreen()),
+    );
+    // Don't carry a sign-up error back onto the login form.
+    if (mounted) auth.clearActionError();
+  }
+
+  // Hide an outdated authentication error once the user edits the form.
+  void _clearAuthError() => context.read<AuthProvider>().clearActionError();
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final busy = auth.isBusy;
+    final error = auth.actionErrorMessage;
+    final text = Theme.of(context).textTheme;
+
     return Scaffold(
+      backgroundColor: AuthColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Icon(Icons.medication_outlined, size: 64),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Medication Follow-up',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Sign in to manage doses and follow-up records.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 32),
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
+                child: AutofillGroup(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Welcome back',
+                        style: text.headlineSmall?.copyWith(
+                          color: AuthColors.heading,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Enter your email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: Icon(
-                            _obscurePassword
+                      const SizedBox(height: 4),
+                      Text(
+                        'Your daily care, made simple',
+                        style: text.bodyMedium?.copyWith(
+                          color: AuthColors.muted,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      const _BrandCard(),
+                      const SizedBox(height: 16),
+                      AuthFieldCard(
+                        child: TextFormField(
+                          controller: _emailController,
+                          enabled: !busy,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.email],
+                          decoration: authFieldDecoration(
+                            label: 'Email',
+                            icon: Icons.people_outline,
+                          ),
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthEmail,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      AuthFieldCard(
+                        child: TextFormField(
+                          controller: _passwordController,
+                          enabled: !busy,
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.password],
+                          onFieldSubmitted: (_) => busy ? null : _signIn(),
+                          decoration: authFieldDecoration(
+                            label: 'Password',
+                            icon: _obscurePassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                           ),
+                          onChanged: (_) => _clearAuthError(),
+                          validator: validateAuthPassword,
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'Use at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      onPressed: _continueToDemoApp,
-                      child: const Text('Sign in to demo'),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: () => _showLinkDoctorDialog(context),
-                      icon: const Icon(Icons.link),
-                      label: const Text('Link a doctor'),
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      AuthTonalButton(
+                        onPressed: _togglePassword,
+                        icon: _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        label: _obscurePassword
+                            ? 'Show password'
+                            : 'Hide password',
+                      ),
+                      if (error != null) ...[
+                        const SizedBox(height: 14),
+                        AuthErrorBanner(message: error),
+                      ],
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 42,
+                        child: FilledButton(
+                          onPressed: busy ? null : _signIn,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AuthColors.primary,
+                            disabledBackgroundColor:
+                                AuthColors.primary.withValues(alpha: 0.6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          child: busy
+                              ? const SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Sign in'),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      AuthTonalButton(
+                        onPressed: busy ? null : _createAccount,
+                        label: 'Create an account',
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -114,37 +188,50 @@ class _AuthScreenState extends State<AuthScreen> {
       ),
     );
   }
+}
 
-  Future<void> _showLinkDoctorDialog(BuildContext context) async {
-    final codeController = TextEditingController();
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Link a doctor'),
-          content: TextField(
-            controller: codeController,
-            textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(labelText: 'Doctor code'),
+class _BrandCard extends StatelessWidget {
+  const _BrandCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: AuthColors.tint,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.verified_user_outlined,
+            size: 36,
+            color: AuthColors.primary,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+          const SizedBox(width: 14),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'MedFollow',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: AuthColors.heading,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                Text(
+                  'Stay on track, every day',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AuthColors.muted),
+                ),
+              ],
             ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Demo link request saved')),
-                );
-              },
-              child: const Text('Link'),
-            ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
-    codeController.dispose();
   }
 }
