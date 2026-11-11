@@ -10,7 +10,7 @@ Phase 3 Flutter prototype for Android and Chrome, using fictional medical data.
 - Codes expire 30 days after server creation time. Doctors can generate, copy, replace, and deactivate codes. Replacement reports partial failures instead of hiding an older active code.
 - Consent confirmation carries the previewed doctor UID. The repository rejects a changed identity; rules revalidate the written doctor UID against the code at commit time.
 - Patients and doctors can revoke links through repository/provider operations. Patient revocation has UI; doctor-side Revoke UI remains pending.
-- Firestore rules cover users, doctorCodes, and doctorLinks. Other collections remain default-denied.
+- Firestore rules cover users, doctorCodes, doctorLinks, medications and immutable stock-consumption receipts. Other collections remain default-denied.
 - Doctor Dashboard receives real active linked patients through LinkedPatientsDashboard. Pull-to-refresh works for empty, short, and longer lists. Provider request generations prevent older reads from overwriting newer mutation/refresh results.
 - Patient Home cards retain status chips and Taken feedback in a growing action area. Buttons have a minimum 48px height without shrinking enlarged text. Regression tests cover 320/390px widths, text scales through 2x, and long names.
 
@@ -18,7 +18,7 @@ Phase 3 Flutter prototype for Android and Chrome, using fictional medical data.
 
 Patient navigation currently contains Today and Medications, plus a Sign out action. The approved patient destinations are Today, Meds, History, and Insights; History and Insights are not integrated yet. Doctors have a separate dashboard and linking-code action.
 
-Medication CRUD/refills, dose confirmation/history, reminders, missed-dose follow-up, and real adherence statistics remain teammate-owned work. Medication screens use fictional SampleData; Save and Taken currently show feedback without persistence. The greeting/refill copy is still demonstration content.
+Person 2's medication CRUD and supply tracking now use authenticated patient-scoped Firestore data through Provider/ChangeNotifier. Today displays the same saved medication plan and stock; it no longer presents sample doses or hardcoded refill warnings in the authenticated flow. Dose confirmation/history, device reminders, missed-dose follow-up, and real adherence statistics remain teammate-owned work. The existing dose-card constructor remains available to Person 1; its demo Taken feedback is not a connected confirmation service.
 
 The doctor adapter passes real Firebase patient UIDs, but statistics are empty until dose integration. Zero records currently display as 0% adherence; this does not indicate measured nonadherence. Doctor-side revocation UI and real patient-history content remain pending.
 
@@ -30,7 +30,20 @@ The doctor adapter passes real Firebase patient UIDs, but statistics are empty u
 - doctorLinks/{patientId}_{doctorId} is the authoritative relationship. UserProfile.linkedDoctorIds stays empty and never authorizes reads.
 - New repositories/providers must use Firebase UIDs, clear session state, and reject stale results.
 - Coordinate changes to main.dart, app_shell.dart, auth_gate.dart, shared models, firestore.rules, pubspec.yaml/lock, and this README.
-- Medication/dose serialization, schedule/time-zone handling, dose IDs, and stock-decrement ownership need shared agreement before persistence integration. Add narrowly scoped rules and negative tests for each new collection.
+- Medication serialization, stock units, stable dose IDs and reminder hooks are documented in [Person 2's handoff](docs/PERSON2_HANDOFF.md). Person 1 still needs to connect dose confirmation, schedule reconciliation and Android notification delivery.
+
+### Person 2 — Medication Management and Refills
+
+| Essential feature | Current status | Evidence |
+|---|---|---|
+| #2 Medication Management | Implemented for the owned CRUD flow | Validated multi-time Add/Edit, full-screen Keep/Confirm soft deletion, Firestore persistence, shared Today/list/refill refresh, patient isolation and error handling |
+| #8 Medication Refill Reminder | In progress | Supply edits including zero, inclusive low-stock threshold, explicit consumption units, estimates and testable alert hooks work; Android notification delivery is not connected or verified |
+
+Medications → Add medication / tap a saved card → Edit → Delete confirmation. Refills are reachable from Medications and Today. Editors opened from Today return to Medications. Cancellation does not write; revision checks reject stale drafts instead of overwriting newer stock.
+
+Each medication owns its only stock balance. Low supply means stockAmount <= refillThreshold (default 7 counted stock units, editable). Estimated days = stockAmount / (unitsPerDose × unique daily times), shown to one decimal only when consumption is explicitly known. Prescribed mg/IU are never inferred to be tablets. Stock and per-dose consumption use whole counted units in this prototype.
+
+New rules were checked locally, not deployed. Use emulators until the team reviews/deploys rules. See [handoff and verification](docs/PERSON2_HANDOFF.md) for limitations, interfaces, commands and actual screenshots.
 
 ### Doctor Linking data model
 
@@ -131,7 +144,7 @@ Rule tests use Node's built-in runner and the local emulator REST API; they need
 If port 8080 is free, the documented temporary-emulator command is:
 
 ~~~powershell
-npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs"
+npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs firestore_rules_test/medication_rules.test.mjs"
 ~~~
 
 An installed CLI can replace the npx prefix with firebase. Do not download tools unnecessarily.
@@ -141,7 +154,7 @@ If this repository's emulator is already running with the current firestore.rule
 ~~~powershell
 $env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
 $env:GCLOUD_PROJECT = 'demo-medfollow'
-node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs
+node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs firestore_rules_test/medication_rules.test.mjs
 ~~~
 
 First check the process/project/rules path. Do not kill unrelated processes. The tests reset demo-medfollow data; do not point GCLOUD_PROJECT at an emulator dataset you want to keep. With singleProjectMode enabled, the separate demo namespace may produce a project-ID warning; it still stays entirely local.
@@ -154,7 +167,7 @@ First check the process/project/rules path. Do not kill unrelated processes. The
 4. Doctor refreshes their dashboard, including with zero/one patient, then opens patient details.
 5. Check Back, sign-out, and account switching. No old patient details or dialogs should remain.
 6. Revoke from the patient, refresh the doctor dashboard, and confirm the patient disappears.
-7. Check Today at narrow widths and enlarged text. Taken remains demo-only feedback.
+7. Add a medication with two daily times; confirm Today and Medications show the same record. Edit, update supply to zero, reload, then test Keep/Confirm deletion. Dose confirmation remains unfinished.
 8. An unknown named route while signed out must show Login.
 
 ## Security boundaries
@@ -163,7 +176,7 @@ First check the process/project/rules path. Do not kill unrelated processes. The
 - Doctor role alone never grants patient-record access; an active patient-approved link is required.
 - Code guessing is not server-rate-limited in this Firestore-only prototype.
 - Revocation blocks future server-authorized reads, but cannot recall data already received/cached.
-- Medication/dose permissions are not implemented; their collections remain denied.
+- Medication reads require ownership or an active doctor link; only the patient may write. Soft deletion retains metadata and stock receipts are immutable. Dose-record permissions remain Person 1's unfinished integration.
 - Local rules/tests are not live deployment. No Firebase deployment is part of this workflow.
 - Fictional coursework data only; production healthcare readiness is outside the project scope.
 
@@ -176,9 +189,10 @@ lib/
   firebase_emulators.dart
   models/       # profiles, links, medication/dose and summary models
   services/     # repository contracts, Firebase adapters, SampleData
-  state/        # AuthProvider and DoctorLinkProvider
+  state/        # AuthProvider, DoctorLinkProvider, MedicationProvider
+  theme/        # shared Material 3 colors, spacing and component styles
   screens/      # AuthGate/session navigator, AppShell, feature screens
-  widgets/      # authentication fields/banners and status chips
+  widgets/      # authentication fields/banners, medication/refill views
 test/           # unit/widget regressions using controllable repositories
 firestore_rules_test/  # sequential local-emulator authorization tests
 firestore.rules
@@ -186,6 +200,19 @@ firebase.json, .firebaserc
 ~~~
 
 Dependencies remain Firebase Core/Auth/Firestore and Provider, with flutter_test/flutter_lints for development. Notification dependencies and implementation remain future teammate work.
+
+No application packages were added by Person 2. Existing package purposes/licenses:
+
+| Package | Purpose | License |
+|---|---|---|
+| Flutter / Dart, flutter_test | Material 3 UI, runtime and widget tests | BSD-3-Clause |
+| provider | Shared authentication/link/medication ChangeNotifier state | MIT |
+| firebase_core | Initialize Firebase | BSD-3-Clause |
+| firebase_auth | Patient/doctor sessions | BSD-3-Clause |
+| cloud_firestore | Persistence, streams and stock transactions | BSD-3-Clause |
+| flutter_lints | Static analysis rules | BSD-3-Clause |
+
+Material icons are Flutter's bundled Material assets (Apache-2.0). Package license notices remain authoritative. No new font, image asset or application dependency was introduced.
 
 ## Design and Documentation Tools
 
@@ -217,3 +244,5 @@ Not all contributions are stored in GitHub. The final Phase 2 PDF includes the c
 AI assistance was used to draft portions of the Flutter starter structure, sample data models, and technical documentation, and to support design inspiration, content revision, and language polishing.
 
 The team reviewed and adapted AI-assisted material, remains responsible for the final work, and can explain the submitted design and implementation decisions.
+
+For Person 2's Phase 3 contribution, Codex generated substantial implementation, tests, documentation and local verification assistance. This is an AI-assisted review draft; student/team review and the ability to explain it are still required before submission. The earlier Phase 2 disclosure does not establish that the team has already reviewed these changes. See the handoff for a code walkthrough and actual evidence.

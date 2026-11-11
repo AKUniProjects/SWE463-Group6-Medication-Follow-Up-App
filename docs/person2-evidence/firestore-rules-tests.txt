@@ -1,0 +1,48 @@
+✔ codes: doctor creates own code with server time (71.0045ms)
+✔ codes: invalid creations are denied (66.6766ms)
+✔ codes: single lookup allowed, enumeration denied (45.4933ms)
+✔ codes: owner may only deactivate; others denied (40.1947ms)
+✔ links: patient creates link with valid code and fresh consent (27.5417ms)
+✔ links: multiple doctors per patient via separate documents (33.8323ms)
+✔ links: invalid, deactivated, expired, or mismatched codes are rejected (47.532ms)
+✔ links: unauthorized or malformed creations are denied (70.83ms)
+✔ links: duplicate active link is rejected (28.3045ms)
+✔ links: only parties can read; queries must be scoped (49.2238ms)
+✔ profiles: linked doctor reads but cannot modify; others denied (45.6671ms)
+✔ revocation: doctor revokes, loses access, cannot reactivate (67.0543ms)
+✔ revocation: patient revokes and later reactivates with fresh consent (72.6824ms)
+✔ revocation: identities immutable, invalid transitions and deletes denied (48.3167ms)
+✔ unrelated collections remain denied (27.6069ms)
+✔ review: codes cannot be overwritten, reassigned, or re-dated (35.1842ms)
+✔ review: reactivation requires a usable code (56.8551ms)
+✔ review: dashboard and patient query contract (73.5377ms)
+✔ doctor-revoked: old code rejected, new post-revocation code accepted (50.7157ms)
+✔ doctor-revoked: new but inactive, or expired, codes are rejected (45.2889ms)
+✔ patient-revoked: same valid code may reactivate (33.7854ms)
+✔ consent identity: deleted and reassigned code cannot authorize previewed doctor (43.146ms)
+✔ consent identity: mismatched doctor and code rejected on reactivation too (40.5385ms)
+✔ medications: own CRUD, revision conflict, soft delete and retained history (118.4409ms)
+✔ medications: anonymous, other patient and doctor writes are denied (59.5866ms)
+✔ medications: queries require patient scope and linked doctors are read-only (75.861ms)
+✔ medications: validates all fields and all daily time positions on the server (144.2014ms)
+✔ consumption: atomic receipt/deduction, immutable receipt and restart read (49.0899ms)
+✔ consumption: no standalone/fake receipt, wrong delta, overdraft or cross-patient deduction (73.1283ms)
+✔ 1. own profile creation with valid data is allowed (51.6694ms)
+✔ 2. own profile read is allowed (10.2586ms)
+✔ 3. unauthenticated access is denied (13.6896ms)
+✔ 4. reading another user's profile is denied (even as doctor) (16.9717ms)
+✔ 5. creating another user's profile is denied (6.2705ms)
+✔ 6. invalid roles are rejected (12.089ms)
+✔ 7. creating with linked doctor IDs is rejected (6.0037ms)
+✔ 8. client-side role change is rejected (9.4688ms)
+✔ 9. client-side doctor-link modification is rejected (8.3244ms)
+✔ 10. unrelated collections remain protected (12.4017ms)
+✔ extra: invalid shapes are rejected, name-only update allowed (21.4446ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2047.5622
