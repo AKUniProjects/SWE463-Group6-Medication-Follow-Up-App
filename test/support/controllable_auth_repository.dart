@@ -23,7 +23,9 @@ class ControllableAuthRepository implements AuthRepository {
 
   /// Profiles stored "in Firestore", keyed by uid.
   final Map<String, UserProfile> profiles = {};
+  @override
   String? currentUid;
+  bool failSignOut = false;
   Object? profileLoadError;
 
   Completer<UserProfile>? pendingAction;
@@ -76,7 +78,10 @@ class ControllableAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signOut() async => emit(null);
+  Future<void> signOut() async {
+    if (failSignOut) throw Exception('sign-out unavailable');
+    emit(null);
+  }
 
   Future<void> close() => _controller.close();
 }

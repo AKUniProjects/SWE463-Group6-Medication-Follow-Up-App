@@ -24,6 +24,9 @@ class AuthProvider extends ChangeNotifier {
 
   StreamSubscription<String?>? _subscription;
   int _changeId = 0;
+  int _actionId = 0;
+  String? _actionUid;
+  bool _actionSuperseded = false;
 
   AuthStatus _status = AuthStatus.loading;
   UserProfile? _userProfile;
@@ -61,6 +64,7 @@ class AuthProvider extends ChangeNotifier {
     _subscription = _repository.authStateChanges.listen(
       _onAuthChanged,
       onError: (Object error, StackTrace stackTrace) {
+        _cancelAction();
         _changeId++;
         _userProfile = null;
         _userId = null;
@@ -96,10 +100,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    _cancelAction();
+    final actionId = _actionId;
     _actionErrorMessage = null;
+    notifyListeners();
     try {
       await _repository.signOut();
+      if (actionId == _actionId && !_disposed) {
+        _onAuthChanged(_repository.currentUid);
+      }
     } catch (_) {
+      if (actionId != _actionId || _disposed) return;
       _actionErrorMessage = 'Could not sign out. Please try again.';
       notifyListeners();
     }
@@ -120,28 +131,32 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     if (isBusy) return false;
 
+    final actionId = ++_actionId;
+    _actionUid = null;
+    _actionSuperseded = false;
     _isSigningIn = !registering;
     _isRegistering = registering;
     _actionErrorMessage = null;
     notifyListeners();
 
     UserProfile? profile;
+    String? failure;
     try {
       profile = await action();
     } on AuthException catch (e) {
-      _actionErrorMessage = e.message;
+      failure = e.message;
     } catch (_) {
-      _actionErrorMessage = const AuthException(AuthErrorCode.unknown).message;
-    } finally {
-      _isSigningIn = false;
-      _isRegistering = false;
+      failure = const AuthException(AuthErrorCode.unknown).message;
     }
 
-    if (_disposed) return profile != null;
+    if (_disposed || actionId != _actionId) return false;
+    _isSigningIn = false;
+    _isRegistering = false;
+    _actionErrorMessage = failure;
 
-    if (profile != null) {
-      // Trust the profile returned by the repository and invalidate any
-      // profile load started by an earlier auth event.
+    if (profile != null &&
+        !_actionSuperseded &&
+        profile.id == _repository.currentUid) {
       _changeId++;
       _userId = profile.id;
       _userProfile = profile;
@@ -151,9 +166,15 @@ class AuthProvider extends ChangeNotifier {
       return true;
     }
 
-    // Resynchronise with the latest auth event seen during the action.
-    _onAuthChanged(_userId);
+    _onAuthChanged(_repository.currentUid);
     return false;
+  }
+
+  void _cancelAction() {
+    _actionId++;
+    _isSigningIn = false;
+    _isRegistering = false;
+    _actionUid = null;
   }
 
   void _onAuthChanged(String? uid) {
@@ -170,8 +191,19 @@ class AuthProvider extends ChangeNotifier {
     _userId = uid;
 
     if (isBusy) {
-      // The running action will resolve the state when it finishes.
-      return;
+      // The first event may precede the registration profile write.
+      // A different non-null identity belongs to a replacement session.
+      if (_actionUid != null && uid != _actionUid) {
+        _actionSuperseded = true;
+        if (uid != null) _cancelAction();
+      }
+      if (isBusy) {
+        _actionUid ??= uid;
+        _userProfile = null;
+        _status = uid == null ? AuthStatus.signedOut : AuthStatus.loading;
+        notifyListeners();
+        return;
+      }
     }
 
     _userProfile = null;
@@ -227,6 +259,7 @@ class AuthProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _cancelAction();
     _changeId++;
     final subscription = _subscription;
     _subscription = null;

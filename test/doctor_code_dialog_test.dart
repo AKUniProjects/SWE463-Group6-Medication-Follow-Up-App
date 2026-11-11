@@ -10,6 +10,8 @@ import 'package:medication_follow_up_app/screens/doctor_code_dialog.dart';
 import 'package:medication_follow_up_app/services/doctor_link_repository.dart';
 import 'package:medication_follow_up_app/state/doctor_link_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:medication_follow_up_app/state/auth_provider.dart';
+import 'support/controllable_auth_repository.dart';
 
 DoctorCode code(String id, {bool active = true, DateTime? createdAt}) =>
     DoctorCode(
@@ -258,15 +260,18 @@ void main() {
 
   group('shell entry point', () {
     Future<void> pumpShell(WidgetTester tester, UserRole role) async {
-      final original = FlutterError.onError;
-      FlutterError.onError = (d) {
-        if (d.exceptionAsString().contains('RenderFlex overflowed')) return;
-        original?.call(d);
-      };
-      addTearDown(() => FlutterError.onError = original);
+      final authRepo = ControllableAuthRepository();
+      final auth = AuthProvider(authRepo);
+      addTearDown(() async {
+        auth.dispose();
+        await authRepo.close();
+      });
       await tester.pumpWidget(
-        ChangeNotifierProvider<DoctorLinkProvider>.value(
-          value: links,
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<DoctorLinkProvider>.value(value: links),
+            ChangeNotifierProvider<AuthProvider>.value(value: auth),
+          ],
           child: MaterialApp(home: AppShell(role: role)),
         ),
       );

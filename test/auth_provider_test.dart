@@ -11,11 +11,14 @@ class FakeAuthRepository implements AuthRepository {
   );
 
   UserProfile? profile;
+  @override
+  String? currentUid;
 
   @override
   Stream<String?> get authStateChanges => _controller.stream;
 
   void emitAuthChange(String? uid) {
+    currentUid = uid;
     _controller.add(uid);
   }
 

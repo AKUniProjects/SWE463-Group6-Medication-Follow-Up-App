@@ -16,16 +16,6 @@ void main() {
 
   /// Pumps the real app (AuthGate) signed out, then opens Sign Up.
   Future<void> openSignUp(WidgetTester tester) async {
-    // PatientHomeScreen has a known pre-existing overflow (out of scope).
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.exceptionAsString().contains('RenderFlex overflowed')) {
-        return;
-      }
-      originalOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = originalOnError);
-
     repo = ControllableAuthRepository();
     auth = AuthProvider(repo)..start();
     addTearDown(() async {

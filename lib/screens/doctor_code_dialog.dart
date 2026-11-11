@@ -10,6 +10,7 @@ import '../widgets/auth_form_widgets.dart';
 Future<void> showDoctorCodeDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
+    useRootNavigator: false,
     builder: (_) => const DoctorCodeDialog(),
   );
 }
@@ -56,6 +57,7 @@ class _DoctorCodeDialogState extends State<DoctorCodeDialog> {
   Future<bool> _confirm(String title, String message, String action) async {
     final result = await showDialog<bool>(
       context: context,
+      useRootNavigator: false,
       builder: (ctx) => AlertDialog(
         title: Text(title),
         content: Text(message),
@@ -96,6 +98,7 @@ class _DoctorCodeDialogState extends State<DoctorCodeDialog> {
     )) {
       return;
     }
+    if (!mounted) return;
     await _run(links.replaceCurrentCode, 'New code created');
   }
 
@@ -109,6 +112,7 @@ class _DoctorCodeDialogState extends State<DoctorCodeDialog> {
     )) {
       return;
     }
+    if (!mounted) return;
     await _run(() => links.deactivateCode(code), 'Code deactivated');
   }
 

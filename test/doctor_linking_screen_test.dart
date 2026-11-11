@@ -68,6 +68,24 @@ void main() {
   bool consentValue(WidgetTester tester) =>
       tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value!;
 
+  testWidgets('changed code identity clears preview and requires new consent',
+      (tester) async {
+    await open(tester);
+    await findDoctor(tester, validCode);
+    await tapVisible(tester, find.byType(CheckboxListTile));
+    repo.codes[validCode] = DoctorCode(
+      code: validCode, doctorId: 'different', doctorName: 'Different doctor',
+      active: true, createdAt: DateTime.now(),
+    );
+    await tapVisible(tester, find.text('Link doctor'));
+    expect(find.textContaining('doctor for this code changed'), findsOneWidget);
+    expect(links.doctorPreview, isNull);
+    expect(repo.links, isEmpty);
+    await tapVisible(tester, find.text('Find doctor'));
+    expect(consentValue(tester), isFalse);
+    expect(find.text('Different doctor'), findsOneWidget);
+  });
+
   testWidgets('renders the Figma content', (tester) async {
     await open(tester);
     expect(find.text('Doctor Linking'), findsOneWidget);

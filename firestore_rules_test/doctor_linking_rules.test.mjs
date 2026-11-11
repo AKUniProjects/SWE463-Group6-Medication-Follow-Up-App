@@ -458,3 +458,25 @@ test('patient-revoked: same valid code may reactivate', async () => {
   assert.equal(await reactivate(DOCTOR, PATIENT, DOCTOR, CODE), DENIED, 'doctor reactivates');
   assert.equal(await reactivate(PATIENT, PATIENT, DOCTOR, CODE), OK, 'patient reactivates');
 });
+
+
+// R1: rules bind the written doctorId to the code again at commit time.
+test('consent identity: deleted and reassigned code cannot authorize previewed doctor', async () => {
+  assert.equal(await createCode(DOCTOR, CODE), OK);
+  assert.equal(await del(as(DOCTOR), 'doctorCodes/' + CODE), OK);
+  assert.equal(await createLink(PATIENT, PATIENT, DOCTOR, CODE), DENIED, 'deleted code');
+  assert.equal(await createCode(DOCTOR2, CODE), OK, 'reuse is structurally possible');
+  assert.equal(await createLink(PATIENT, PATIENT, DOCTOR, CODE), DENIED, 'previewed UID no longer matches');
+  assert.equal(await get(as(DOCTOR), 'users/' + PATIENT), DENIED);
+  assert.equal(await get(as(DOCTOR2), 'users/' + PATIENT), DENIED);
+});
+
+test('consent identity: mismatched doctor and code rejected on reactivation too', async () => {
+  await createCode(DOCTOR, CODE);
+  await createLink(PATIENT, PATIENT, DOCTOR, CODE);
+  await revoke(PATIENT, PATIENT, DOCTOR);
+  await del(as(DOCTOR), 'doctorCodes/' + CODE);
+  await createCode(DOCTOR2, CODE);
+  assert.equal(await reactivate(PATIENT, PATIENT, DOCTOR, CODE), DENIED);
+  assert.equal(await get(as(DOCTOR), 'users/' + PATIENT), DENIED);
+});

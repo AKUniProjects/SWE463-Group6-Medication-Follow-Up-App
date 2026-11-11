@@ -120,25 +120,24 @@ class _DoseCard extends StatelessWidget {
     };
 
     return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(isTaken ? Icons.check : Icons.medication_outlined),
-        ),
-        title: Text(record.medicationName),
-        subtitle: Text(_timeLabel(record.scheduledTime)),
-        // ListTile limits trailing height (56px). Compact density and
-        // shrink-wrapped tap targets fit the chip + button; FittedBox only
-        // scales down if large text would still exceed the limit.
-        trailing: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              visualDensity: VisualDensity.compact,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              child: Icon(isTaken ? Icons.check : Icons.medication_outlined),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+            title: Text(record.medicationName),
+            subtitle: Text(_timeLabel(record.scheduledTime)),
+          ),
+          // Actions have their own growing area instead of ListTile.trailing's
+          // fixed height. Wrap preserves text scaling on narrow screens.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
               children: [
                 StatusChip(
                   label: _statusLabel(record.status),
@@ -146,6 +145,9 @@ class _DoseCard extends StatelessWidget {
                 ),
                 if (!isTaken)
                   TextButton(
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(64, 48),
+                    ),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('${record.medicationName} marked taken')),
@@ -156,7 +158,7 @@ class _DoseCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

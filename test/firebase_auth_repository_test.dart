@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medication_follow_up_app/models/user_profile.dart';
 import 'package:medication_follow_up_app/services/auth_repository.dart';
@@ -47,15 +49,18 @@ class FakeProfileStore implements ProfileStore {
   final Map<String, Map<String, dynamic>> docs = {};
   bool failWrite = false;
   bool failRead = false;
+  Completer<void>? pending;
 
   @override
   Future<Map<String, dynamic>?> read(String uid) async {
+    if (pending != null) await pending!.future;
     if (failRead) throw Exception('read failed');
     return docs[uid];
   }
 
   @override
   Future<void> write(String uid, Map<String, dynamic> data) async {
+    if (pending != null) await pending!.future;
     if (failWrite) throw Exception('permission-denied');
     docs[uid] = data;
   }
@@ -78,6 +83,28 @@ void main() {
       profileStore: store,
     );
   });
+
+  for (final registering in [false, true]) {
+    test('failed old auth operation leaves replacement user intact: $registering',
+        () async {
+      store.pending = Completer<void>();
+      store.failRead = true;
+      store.failWrite = true;
+      final operation = registering
+          ? repository.signUp(displayName: 'A', email: 'a@example.com',
+              password: 'secret1', role: UserRole.patient)
+          : repository.signIn(email: 'a@example.com', password: 'secret1');
+      final assertion = expectLater(operation, throwsAuth(registering
+          ? AuthErrorCode.profileCreationFailed : AuthErrorCode.profileLoadFailed));
+      await Future<void>.delayed(Duration.zero);
+      gateway.currentUidValue = 'replacement-user';
+      store.pending!.complete();
+      await assertion;
+      expect(gateway.currentUid, 'replacement-user');
+      expect(gateway.deleted, isFalse);
+      expect(gateway.signOutCalls, 0);
+    });
+  }
 
   group('signIn', () {
     test('returns the stored profile', () async {

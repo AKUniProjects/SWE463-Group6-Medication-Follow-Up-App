@@ -94,6 +94,7 @@ void main() {
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNull);
 
+    repo.emit(patient.id);
     repo.pendingAction!.complete(patient);
     await tester.pump();
     expect(auth.isPatient, isTrue);

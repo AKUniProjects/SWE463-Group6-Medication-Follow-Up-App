@@ -228,20 +228,53 @@ void main() {
   });
 
   group('linking', () {
+    test('confirmation rejects deleted or reassigned preview code', () async {
+      final code = await issueCode();
+      uid = 'pat';
+      final preview = await repo().lookupCode(code.code);
+      store.codes.remove(code.code);
+      await expectLater(
+        repo().linkWithCode(code.code, consentGiven: true,
+            expectedDoctorId: preview.doctorId),
+        throwsLink(DoctorLinkErrorCode.codeNotFound),
+      );
+      store.codes[code.code] = {
+        'doctorId': 'other-doctor', 'doctorName': 'Other Doctor',
+        'active': true, 'createdAt': store.clock,
+      };
+      await expectLater(
+        repo().linkWithCode(code.code, consentGiven: true,
+            expectedDoctorId: preview.doctorId),
+        throwsLink(DoctorLinkErrorCode.doctorChanged),
+      );
+      expect(store.links, isEmpty);
+    });
+
+    test('direct repository call rejects mismatched expected doctor', () async {
+      await issueCode();
+      uid = 'pat';
+      await expectLater(
+        repo().linkWithCode('ABCDEFGH23', consentGiven: true,
+            expectedDoctorId: 'wrong-doctor'),
+        throwsLink(DoctorLinkErrorCode.doctorChanged),
+      );
+      expect(store.links, isEmpty);
+    });
+
     test('requires explicit consent and patient role', () async {
       await issueCode();
       uid = 'pat';
-      expect(repo().linkWithCode('ABCDEFGH23', consentGiven: false),
+      expect(repo().linkWithCode('ABCDEFGH23', consentGiven: false, expectedDoctorId: 'doc'),
           throwsLink(DoctorLinkErrorCode.consentRequired));
       uid = 'doc';
-      expect(repo().linkWithCode('ABCDEFGH23', consentGiven: true),
+      expect(repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc'),
           throwsLink(DoctorLinkErrorCode.notPatient));
     });
 
     test('creates link from signed-in UID with server consentedAt', () async {
       await issueCode();
       uid = 'pat';
-      final link = await repo().linkWithCode('abcdefgh23', consentGiven: true);
+      final link = await repo().linkWithCode('abcdefgh23', consentGiven: true, expectedDoctorId: 'doc');
 
       expect(link.id, 'pat_doc');
       expect(store.lastWrite, {
@@ -259,15 +292,15 @@ void main() {
     test('prevents duplicate active link', () async {
       await issueCode();
       uid = 'pat';
-      await repo().linkWithCode('ABCDEFGH23', consentGiven: true);
-      expect(repo().linkWithCode('ABCDEFGH23', consentGiven: true),
+      await repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc');
+      expect(repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc'),
           throwsLink(DoctorLinkErrorCode.alreadyLinked));
     });
 
     test('lists links with uid-constrained queries', () async {
       await issueCode();
       uid = 'pat';
-      await repo().linkWithCode('ABCDEFGH23', consentGiven: true);
+      await repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc');
 
       expect((await repo().linksForPatient()).single.doctorId, 'doc');
       expect(store.queries.last, 'doctorLinks.patientId==pat');
@@ -281,7 +314,7 @@ void main() {
     Future<DoctorLink> linked() async {
       await issueCode();
       uid = 'pat';
-      return repo().linkWithCode('ABCDEFGH23', consentGiven: true);
+      return repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc');
     }
 
     test('either party revokes with server revokedAt', () async {
@@ -313,7 +346,7 @@ void main() {
       await repo().revokeLink(link); // uid = pat
       store.clock = store.clock.add(const Duration(hours: 1));
 
-      final again = await repo().linkWithCode('ABCDEFGH23', consentGiven: true);
+      final again = await repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc');
       expect(again.isActive, isTrue);
       expect(store.links['pat_doc']!.containsKey('revokedBy'), isFalse);
     });
@@ -326,14 +359,14 @@ void main() {
 
       uid = 'pat';
       await expectLater(
-        repo().linkWithCode('ABCDEFGH23', consentGiven: true),
+        repo().linkWithCode('ABCDEFGH23', consentGiven: true, expectedDoctorId: 'doc'),
         throwsLink(DoctorLinkErrorCode.newCodeRequired),
       );
 
       store.clock = store.clock.add(const Duration(hours: 1));
       final fresh = await issueCode(); // uid = doc
       uid = 'pat';
-      final again = await repo().linkWithCode(fresh.code, consentGiven: true);
+      final again = await repo().linkWithCode(fresh.code, consentGiven: true, expectedDoctorId: 'doc');
       expect(again.linkCode, fresh.code);
       expect(store.links['pat_doc']!['status'], 'active');
     });

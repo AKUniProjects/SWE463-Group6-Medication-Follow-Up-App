@@ -53,10 +53,14 @@ class FakeRepo implements DoctorLinkRepository {
   Future<DoctorLink> linkWithCode(
     String input, {
     required bool consentGiven,
+    required String expectedDoctorId,
   }) async {
     linkCalls++;
     consentPassed.add(consentGiven);
     final code = await lookupCode(input);
+    if (code.doctorId != expectedDoctorId) {
+      throw const DoctorLinkException(DoctorLinkErrorCode.doctorChanged);
+    }
     final id = doctorLinkId(patientId, code.doctorId);
     final existing = links[id];
     if (existing != null && existing.isActive) {

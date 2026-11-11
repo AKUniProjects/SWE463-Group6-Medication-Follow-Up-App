@@ -7,6 +7,9 @@ abstract class AuthRepository {
   /// Emits the signed-in user's UID, or null when signed out.
   Stream<String?> get authStateChanges;
 
+  /// Authoritative identity, including while an operation is pending.
+  String? get currentUid;
+
   /// Returns the current user's profile, if authenticated.
   Future<UserProfile?> getCurrentUserProfile();
 

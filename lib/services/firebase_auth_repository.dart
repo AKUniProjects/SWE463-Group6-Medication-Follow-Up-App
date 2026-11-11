@@ -137,6 +137,9 @@ class FirebaseAuthRepository implements AuthRepository {
   final AuthGateway _auth;
   final ProfileStore _profiles;
 
+  @override
+  String? get currentUid => _auth.currentUid;
+
   // Listen for Firebase login/logout changes.
   @override
   Stream<String?> get authStateChanges => _auth.authStateChanges();
@@ -170,13 +173,13 @@ class FirebaseAuthRepository implements AuthRepository {
       final data = await _profiles.read(uid);
       if (data != null) profile = UserProfile.fromMap(uid, data);
     } catch (_) {
-      await _safeSignOut();
+      await _safeSignOut(uid);
       throw const AuthException(AuthErrorCode.profileLoadFailed);
     }
 
     if (profile == null) {
       // Do not leave a session open without a usable profile.
-      await _safeSignOut();
+      await _safeSignOut(uid);
       throw const AuthException(AuthErrorCode.profileNotFound);
     }
     return profile;
@@ -212,9 +215,9 @@ class FirebaseAuthRepository implements AuthRepository {
       // Roll back so a half-created account is never reported as
       // registered. If deletion fails, at least end the session.
       try {
-        await _auth.deleteCurrentUser();
+        if (_auth.currentUid == uid) await _auth.deleteCurrentUser();
       } catch (_) {
-        await _safeSignOut();
+        await _safeSignOut(uid);
       }
       throw const AuthException(AuthErrorCode.profileCreationFailed);
     }
@@ -235,7 +238,9 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 
-  Future<void> _safeSignOut() async {
+  Future<void> _safeSignOut(String expectedUid) async {
+    // Cleanup belongs to the failed operation, never a replacement session.
+    if (_auth.currentUid != expectedUid) return;
     try {
       await _auth.signOut();
     } catch (_) {

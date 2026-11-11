@@ -74,6 +74,32 @@ void main() {
 
   tearDown(() => links.dispose());
 
+  for (final count in [0, 1, 3]) {
+    testWidgets('pull refresh works with $count patients and updates links',
+        (tester) async {
+      repo.byDoctor['doc'] = [
+        for (var i = 0; i < count; i++) patient('p$i', 'Patient $i'),
+      ];
+      await tester.pumpWidget(ChangeNotifierProvider.value(
+        value: links,
+        child: const MaterialApp(home: LinkedPatientsDashboard()),
+      ));
+      await tester.pumpAndSettle();
+      final before = repo.loads;
+      repo.byDoctor['doc'] = [patient('new', 'New linked patient')];
+      await tester.drag(find.byType(ListView), const Offset(0, 400));
+      await tester.pumpAndSettle();
+      expect(repo.loads, before + 1);
+      expect(find.text('New linked patient'), findsOneWidget);
+      // The next successful refresh removes the revoked relationship.
+      repo.byDoctor['doc'] = [];
+      await tester.drag(find.byType(ListView), const Offset(0, 400));
+      await tester.pumpAndSettle();
+      expect(find.text('New linked patient'), findsNothing);
+      expect(find.text('No linked patients yet.'), findsOneWidget);
+    });
+  }
+
   group('provider', () {
     test('loads active linked patients', () async {
       expect(await links.loadLinkedPatients(), isTrue);

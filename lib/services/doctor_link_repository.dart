@@ -36,9 +36,13 @@ abstract class DoctorLinkRepository {
 
   /// Creates or reactivates the link to the code's doctor. Requires
   /// [consentGiven] to be true (explicit patient consent).
+  /// [expectedDoctorId] must be the UID shown during preview; a changed
+  /// identity is rejected before writing. Rules bind the written doctorId
+  /// to the code again at commit time.
   Future<DoctorLink> linkWithCode(
     String input, {
     required bool consentGiven,
+    required String expectedDoctorId,
   });
 
   /// Links where the signed-in user is the patient.
@@ -85,6 +89,7 @@ enum DoctorLinkErrorCode {
   codeInactive,
   codeExpired,
   ownCode,
+  doctorChanged,
   alreadyLinked,
   newCodeRequired,
   notLinked,
@@ -118,6 +123,8 @@ class DoctorLinkException implements Exception {
         return 'This code is no longer active. Ask your doctor for a new one.';
       case DoctorLinkErrorCode.codeExpired:
         return 'This code has expired. Ask your doctor for a new one.';
+      case DoctorLinkErrorCode.doctorChanged:
+        return 'The doctor for this code changed. Look up the code again before consenting.';
       case DoctorLinkErrorCode.ownCode:
         return 'You cannot link to your own account.';
       case DoctorLinkErrorCode.alreadyLinked:

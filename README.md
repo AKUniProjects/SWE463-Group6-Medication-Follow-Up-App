@@ -1,237 +1,191 @@
-# Medication Follow-up App - Flutter Starter
+# SWE463 Group 06 — Medication Follow-up App
 
-Flutter project for SWE463 Group 6. Started in Phase 2; Phase 3 adds Firebase authentication (see "Phase 3 Status" below).
+Phase 3 Flutter prototype for Android and Chrome, using fictional medical data.
 
-## Purpose
+## Current implementation
 
-This project provides a runnable UI shell and placeholder navigation for the Medication Follow-up App. Full Firebase integration and notification implementation are planned for the implementation phase; this Phase 2 starter uses fictional in-memory sample data.
+- Firebase Authentication: Patient/Doctor registration, email/password login, validation, profile creation with rollback, session restoration, sign-out, and visible sign-out errors.
+- Role routing through AuthGate and AppShell. Each authenticated session owns a navigator; switching identity or signing out disposes its details, editors, linking screens, and dialogs. Late auth-action results cannot restore a superseded session.
+- Doctor Linking: secure 10-character codes, normalized lookup, doctor preview, explicit consent, duplicate prevention, link success/error views, and patient link management.
+- Codes expire 30 days after server creation time. Doctors can generate, copy, replace, and deactivate codes. Replacement reports partial failures instead of hiding an older active code.
+- Consent confirmation carries the previewed doctor UID. The repository rejects a changed identity; rules revalidate the written doctor UID against the code at commit time.
+- Patients and doctors can revoke links through repository/provider operations. Patient revocation has UI; doctor-side Revoke UI remains pending.
+- Firestore rules cover users, doctorCodes, and doctorLinks. Other collections remain default-denied.
+- Doctor Dashboard receives real active linked patients through LinkedPatientsDashboard. Pull-to-refresh works for empty, short, and longer lists. Provider request generations prevent older reads from overwriting newer mutation/refresh results.
+- Patient Home cards retain status chips and Taken feedback in a growing action area. Buttons have a minimum 48px height without shrinking enlarged text. Regression tests cover 320/390px widths, text scales through 2x, and long names.
 
-## Current Navigation
+## Known unfinished Phase 3 work
 
-1. Sign In screen
-2. Patient Today screen
-3. Medications screen
-4. Medication editor screen
-5. Doctor dashboard
-6. Patient details screen
+Patient navigation currently contains Today and Medications, plus a Sign out action. The approved patient destinations are Today, Meds, History, and Insights; History and Insights are not integrated yet. Doctors have a separate dashboard and linking-code action.
 
-The current starter application's bottom navigation switches between Today, Medications, and Doctor view. Tapping a medication opens its editor, while tapping a patient opens patient details.
+Medication CRUD/refills, dose confirmation/history, reminders, missed-dose follow-up, and real adherence statistics remain teammate-owned work. Medication screens use fictional SampleData; Save and Taken currently show feedback without persistence. The greeting/refill copy is still demonstration content.
 
-The full Phase 2 Figma design includes four patient navigation destinations (Today, Meds, History, and Insights) and a separate doctor flow. These will be implemented in the next development phase.
+The doctor adapter passes real Firebase patient UIDs, but statistics are empty until dose integration. Zero records currently display as 0% adherence; this does not indicate measured nonadherence. Doctor-side revocation UI and real patient-history content remain pending.
 
-> **Phase 3 update:** the starter navigation above has been replaced by authenticated, role-based navigation. See the Phase 3 sections below.
+## Shared architecture and contracts
 
-## Phase 3 Status — Authentication (Tasks 2.1–2.6)
+- Models are in lib/models; repository interfaces and Firebase adapters are in lib/services; session-scoped ChangeNotifiers are in lib/state.
+- AuthRepository.currentUid exposes the authoritative identity even while an operation is pending.
+- DoctorLinkProvider follows AuthProvider through the ProxyProvider in main.dart.
+- doctorLinks/{patientId}_{doctorId} is the authoritative relationship. UserProfile.linkedDoctorIds stays empty and never authorizes reads.
+- New repositories/providers must use Firebase UIDs, clear session state, and reject stale results.
+- Coordinate changes to main.dart, app_shell.dart, auth_gate.dart, shared models, firestore.rules, pubspec.yaml/lock, and this README.
+- Medication/dose serialization, schedule/time-zone handling, dose IDs, and stock-decrement ownership need shared agreement before persistence integration. Add narrowly scoped rules and negative tests for each new collection.
 
-Implemented and tested:
+### Doctor Linking data model
 
-- Email/password **Sign In** and **Sign Up** (Patient or Doctor) using Firebase Authentication, matching the Figma Login and Sign Up screens.
-- User profiles stored in Cloud Firestore at `users/{uid}` (`displayName`, `email`, `role`, `linkedDoctorIds`).
-- `AuthProvider` (Provider/ChangeNotifier) manages loading, signed-out, signed-in, missing-profile, and error states, and handles the registration race condition.
-- `AuthGate` routes by the stored role: patients see Today/Medications; doctors see the Doctor dashboard. Signed-out users always see Login; unknown routes (for example `/#/app`) cannot bypass it.
-- Form validation and friendly error messages (wrong password, duplicate email, weak password, network, missing profile).
-- Firestore Security Rules for user profiles, plus Firebase Local Emulator Suite support.
+| Document | Fields and policy |
+|---|---|
+| users/{uid} | displayName, email, role, linkedDoctorIds. Owner creates their profile; only displayName can be updated. A linked doctor can read the patient's profile, never modify it. |
+| doctorCodes/{code} | doctorId, doctorName, active, createdAt. Doctor creates their own code; 30-day expiry derives from immutable server createdAt. Owner may deactivate or delete. Signed-in users can get a known code; only its owner can list their codes. |
+| doctorLinks/{patientId}_{doctorId} | patientId, doctorId, patientName, doctorName, linkCode, status, consentedAt; revokedAt/revokedBy when revoked. Patient creates/reactivates with a usable code and fresh consent. Either party may revoke. No deletes. |
 
-Current limitations:
+Codes use the 32-symbol alphabet ABCDEFGHJKLMNPQRSTUVWXYZ23456789 (50 bits for 10 characters), generated with Random.secure(). Creation is transactional and retries collisions. Spaces/hyphens are removed and input is uppercased before lookup; grouped display is presentation only.
 
-- Patient and doctor screens still display **fictional sample data**, not the signed-in user's data.
-- Doctor Linking, medications, reminders, dose history, and refill features are not yet connected to Firestore.
-- Firestore rules currently allow **only** `users/{uid}`; every other collection is denied until its feature adds rules.
-- A self-selected Doctor role is **not** professional verification and grants no access to patient records.
-- `patient_home_screen.dart` has a known 40-pixel layout overflow.
+createdAt, consentedAt, and revokedAt use FieldValue.serverTimestamp(). Client-chosen timestamps are rejected.
 
-## Doctor Linking Data Contract (Task 3.2 — rules only)
+After patient revocation, the same still-valid code may reactivate the link. After doctor revocation, the patient must use a code issued strictly after revokedAt. Code deactivation/replacement does not revoke existing links.
 
-> Coursework prototype with fictional data. Doctor self-registration is allowed but is **not** professional verification, and this design is **not** production-ready for real medical data.
+The repository's linkWithCode requires both consentGiven and expectedDoctorId from preview. Deleted codes fail lookup; a code recreated for another doctor fails the UID comparison. If it changes after lookup but before writing, existing rules reject the original doctorId/code pair. Rules cannot prove what a human read on screen; they enforce the patient-authenticated write and the code/doctor relationship.
 
-The authoritative relationship is `doctorLinks/{patientId}_{doctorId}`. `UserProfile.linkedDoctorIds` is not used for authorization and stays empty.
+### Authorized query contract
 
-| Collection | Fields | Who can do what |
-|---|---|---|
-| `doctorCodes/{code}` | `doctorId`, `doctorName`, `active`, `createdAt` (server time) | Doctor creates own code (10 chars from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, name must match their profile); valid 30 days; owner may deactivate or delete. Signed-in users may `get` one code; only the owner may list (`where doctorId == myUid`). |
-| `doctorLinks/{patientId}_{doctorId}` | `patientId`, `doctorId`, `patientName`, `doctorName`, `linkCode`, `status` (`active`/`revoked`), `consentedAt` (server time), `revokedAt`, `revokedBy` | Only the patient creates or reactivates, with a valid code and fresh consent. Either party revokes. Doctors cannot reactivate. After a patient revocation, any valid code from that doctor works; after a **doctor** revocation, the patient needs a code the doctor issued **after** the revocation. No deletes. |
+- Doctor links: doctorLinks.where('doctorId', isEqualTo: myUid), then filter active status in Dart (or add an active equality filter).
+- Patient links: doctorLinks.where('patientId', isEqualTo: myUid).
+- Linked patient profile: users.doc(patientId).get(), individually by ID.
+- Do not issue unrestricted users or doctorLinks collection queries. Security Rules are not filters.
+- Future doctor access to medication/dose records must also require an active patient-approved relationship; Doctor role alone is insufficient.
 
-Queries for teammates (other queries are denied):
+## Development setup — Windows PowerShell
 
-- Doctor's patients: `doctorLinks.where('doctorId', isEqualTo: myUid).where('status', isEqualTo: 'active')` (or only the `doctorId` filter, then filter `status` in Dart). Every query **must** include `doctorId == myUid` or `patientId == myUid`; Security Rules are not filters, so queries without that constraint are rejected.
-- Patient's doctors: `doctorLinks.where('patientId', isEqualTo: myUid)`.
-- Patient profile for a linked doctor: `users.doc(patientId).get()` by ID only (no `users` queries). Access ends when the link is revoked.
+### Tools and supported targets
 
-All of the above were verified against the Firestore emulator (`firestore_rules_test/doctor_linking_rules.test.mjs`).
+| Tool | Recommended setup |
+|---|---|
+| Flutter / Dart | Verified locally with Flutter 3.47.9 stable / Dart 3.13.7. The lockfile requires Dart >=3.13.0; pubspec reflects that minimum. Prefer the verified toolchain for teammates. |
+| Firebase CLI | 15.35.0 used for emulator verification; use an existing installation, or install separately during initial setup. |
+| Java | JDK 21 or newer for the Firestore emulator. |
+| Node.js | Node 24 used for CLI and built-in Node rule tests. |
+| Chrome | Configured web target. Edge is also available as a development target. |
+| Android Studio/device emulator | Android is the primary mobile target; check flutter devices for its actual ID. |
 
-Code format: stored codes are exactly 10 characters from the 32-symbol alphabet above (50 bits), with no spaces or hyphens. The app may display them as `ABCD-EFGH-23`, and must normalize user input with `normalizeDoctorCode()` before lookup. Expiry is `createdAt + 30 days`; there is no stored `expiresAt`, and `createdAt` cannot be changed after creation.
+Firebase options are configured for Android and web only. Generated Windows/macOS/Linux/iOS folders do not mean Firebase is configured for those targets.
 
-Timestamps `createdAt`, `consentedAt`, and `revokedAt` must be written as `FieldValue.serverTimestamp()`; client-chosen times are rejected. See the write contract at the top of `lib/models/doctor_link.dart`.
+Initial setup (downloads Flutter dependencies):
 
-Known limitations of this prototype:
-
-- Doctors self-register and are not professionally verified; patient consent (creating the link) is required before any doctor access.
-- Codes cannot be listed by patients, but guessing single codes is not server-rate-limited (Firestore-only design, no Cloud Functions).
-- The rules record that the patient performed the link operation; they cannot prove the patient read an explanation. The consent screen is planned for Task 3.5.
-- Revocation blocks later authorized reads, but data already received or cached on a device cannot be recalled.
-- Doctor access to medications, dose history, and adherence needs future rules; those collections remain denied.
-- These rules have only been tested on the local emulator and have **not** been deployed to the live Firebase project.
-
-Requirements for Task 3.3 (repository): generate codes with `Random.secure()` over `doctorCodeAlphabet`; create codes with a "must not exist" write and retry on collision; use server timestamps as above; revoke with an update of `status`, `revokedBy`, and `revokedAt` only.
-
-### Doctor Dashboard integration (Task 3.6)
-
-The doctor shell now feeds the existing `DoctorDashboardScreen` (unchanged) with real linked patients through `lib/screens/linked_patients_dashboard.dart`:
-
-- Data: `DoctorLinkProvider.loadLinkedPatients()` / `linkedPatients` (`List<LinkedPatient>`: `patientId`, `displayName`, `email`, `link`). Only active links and rule-authorized profiles are returned; sign-out or switching accounts clears the list.
-- Mapping: `toPatientSummary(LinkedPatient)` sets `PatientSummary.patientId` to the patient's Firebase UID (used by `PatientDetailsScreen`). Statistics are empty ("No dose records yet") until the dashboard owner supplies real adherence data.
-- Refresh: pull down on the patient list (touch or mouse) to re-check links; revoked patients disappear. When the list is empty the dashboard's empty state is not scrollable, so new links appear after reload or the next sign-in (the dashboard owner may add a refresh action).
-- Doctor revocation: `DoctorLinkProvider.revokePatientLink(LinkedPatient)` is available but not yet shown in the dashboard UI (needs a confirmation dialog in the dashboard owner's design). After a doctor revokes, the patient needs a code issued after the revocation.
-- Medications and dose records: future rules must use the same active-link check (`doctorLinks/{patientId}_{doctorId}` with `status == 'active'`), patient writes only.
-
-## Development Setup (Windows PowerShell)
-
-### Required tools
-
-| Tool | Version used | Purpose |
-|---|---|---|
-| Flutter SDK | 3.47.9 (stable) | Build and run the app |
-| Java (JDK) | 21 or newer | Firestore emulator |
-| Node.js | 24 (LTS recommended) | Firebase CLI via `npx` and rule tests |
-| Chrome or Edge | Current | Web target |
-| Android Studio + Android Emulator | Current | Android target |
-
-The Firebase CLI does not need a global install; commands below use `npx -y firebase-tools@15.35.0`.
-
-### Initial setup
-
-```powershell
+~~~powershell
 git clone https://github.com/AKUniProjects/SWE463-Group6-Medication-Follow-Up-App.git
 cd SWE463-Group6-Medication-Follow-Up-App
 flutter pub get
-```
+~~~
 
-Firebase configuration (`lib/firebase_options.dart`, `android/app/google-services.json`, `firebase.json`, `.firebaserc`) is already committed for project `swe463-group06-medication-app`. Only re-run `flutterfire configure` if the Firebase project changes.
+Firebase client configuration is committed for swe463-group06-medication-app. It is not a service-account credential. Do not commit passwords, private keys, or tokens.
 
-### Run against the live Firebase project
+### Run locally with emulators — recommended
 
-```powershell
-flutter run -d chrome          # or: flutter run -d edge
-flutter run -d emulator-5554   # Android Emulator (see: flutter devices)
-```
+Terminal 1:
 
-### Run against local Firebase emulators (recommended for development)
+~~~powershell
+firebase emulators:start --only auth,firestore
+# If the pinned CLI is not installed, initial setup may instead use:
+# npx -y firebase-tools@15.35.0 emulators:start --only auth,firestore
+~~~
 
-Terminal 1 — start the Auth (9099) and Firestore (8080) emulators. Emulator UI: http://127.0.0.1:4000
+Auth listens on 9099, Firestore on 8080, and Emulator UI on http://127.0.0.1:4000.
 
-```powershell
-npx -y firebase-tools@15.35.0 emulators:start --only auth,firestore
-```
+Terminal 2:
 
-Terminal 2 — run the app in emulator mode:
+~~~powershell
+flutter run --no-pub -d chrome --dart-define=USE_FIREBASE_EMULATORS=true
+flutter run --no-pub -d emulator-5554 --dart-define=USE_FIREBASE_EMULATORS=true
+~~~
 
-```powershell
-flutter run -d chrome --dart-define=USE_FIREBASE_EMULATORS=true
-flutter run -d emulator-5554 --dart-define=USE_FIREBASE_EMULATORS=true
-```
+Replace emulator-5554 with the Android ID from flutter devices. Web connects through localhost; Android Emulator uses 10.0.2.2.
 
-- Chrome/Edge connect to `localhost`; the Android Emulator connects to `10.0.2.2` automatically.
-- For a physical phone, add `--dart-define=FIREBASE_EMULATOR_HOST=<your PC's LAN IP>`.
-- Emulator mode is opt-in, refused in release builds, and never falls back to the live project. The browser console prints `Using Firebase emulators at ...` and Firebase shows an "emulator mode" banner.
-- Emulator data is temporary and is cleared when the emulators stop.
+Emulator mode is opt-in, refused in release builds, and does not silently fall back to live Firebase. Always include USE_FIREBASE_EMULATORS=true for fictional testing. Omitting it uses the configured live project, whose rules have not been deployed/verified as part of this prototype; do not use that as the default test path.
 
-### Test accounts
+Emulators bind to 127.0.0.1. A physical phone cannot reach that listener merely by adding FIREBASE_EMULATOR_HOST=<PC LAN IP>. LAN testing requires deliberate emulator host/network configuration; prefer Chrome or Android Emulator for the documented local setup. Emulator data is temporary unless explicitly exported/imported.
 
-Use fictional data only, and only in emulator mode. Create accounts through the app's **Create an account** screen, for example:
+### Fictional test accounts
+
+Create accounts through the local app's Create an account screen:
 
 | Role | Name | Email | Password |
 |---|---|---|---|
-| Patient | Test Patient | `patient.test@example.com` | any 6+ characters |
-| Doctor | Test Doctor | `doctor.test@example.com` | any 6+ characters |
+| Patient | Test Patient | patient.test@example.com | Choose a fictional password, 6+ characters |
+| Doctor | Test Doctor | doctor.test@example.com | Choose a fictional password, 6+ characters |
 
-Never commit real credentials, tokens, or service-account keys.
+Use different accounts for account-switching checks. Do not enter real patient information.
 
-### Running tests
+## Tests
 
-```powershell
-flutter analyze
-flutter test
-```
+With dependencies already available:
 
-Firestore Security Rules tests (run inside a temporary Firestore emulator; no npm install needed):
+~~~powershell
+flutter analyze --no-pub
+flutter test --no-pub
+~~~
 
-```powershell
+Rule tests use Node's built-in runner and the local emulator REST API; they need no npm test dependencies. Run files sequentially because each test resets its test-project database.
+
+If port 8080 is free, the documented temporary-emulator command is:
+
+~~~powershell
 npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs"
-```
+~~~
 
-### Manual emulator test checklist
+An installed CLI can replace the npx prefix with firebase. Do not download tools unnecessarily.
 
-With the emulators and the app running in emulator mode:
+If this repository's emulator is already running with the current firestore.rules, reuse it in a separate fictional test-project namespace:
 
-1. Sign up as a Patient → the Patient interface opens; Emulator UI shows the Auth user and `users/{uid}` with `role: patient` and empty `linkedDoctorIds`.
-2. Reload the page → the session is restored. Sign out → Login appears.
-3. Sign in with a wrong password → "Incorrect email or password." and no access.
-4. Sign up as a Doctor → the Doctor dashboard opens; reload restores it; sign out returns to Login.
-5. Sign up again with an existing email → "An account already exists for this email."
-6. Create an Auth-only user in the Emulator UI (no profile) and sign in → "No user profile was found for this account." and the user stays signed out.
-7. While signed out, open `http://localhost:<port>/#/app` → Login is shown.
+~~~powershell
+$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
+$env:GCLOUD_PROJECT = 'demo-medfollow'
+node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs
+~~~
 
-### Before live deployment (Firebase Console)
+First check the process/project/rules path. Do not kill unrelated processes. The tests reset demo-medfollow data; do not point GCLOUD_PROJECT at an emulator dataset you want to keep. With singleProjectMode enabled, the separate demo namespace may produce a project-ID warning; it still stays entirely local.
 
-1. **Authentication → Sign-in method:** enable **Email/Password**.
-2. **Firestore Database:** create the database (production mode) if it does not exist.
-3. Review and publish `firestore.rules` (for example `npx -y firebase-tools@15.35.0 deploy --only firestore:rules`) — only after team approval.
-4. Add rules for each new collection (doctor links, medications, dose records, refills) before those features write data.
+### Manual smoke checklist
 
-## Project Structure
+1. Register Patient and Doctor accounts in emulator mode; verify the corresponding role screens.
+2. Reload to check restoration; try incorrect credentials and an Auth-only account with a missing profile.
+3. Doctor generates a code; patient previews the doctor and explicitly consents.
+4. Doctor refreshes their dashboard, including with zero/one patient, then opens patient details.
+5. Check Back, sign-out, and account switching. No old patient details or dialogs should remain.
+6. Revoke from the patient, refresh the doctor dashboard, and confirm the patient disappears.
+7. Check Today at narrow widths and enlarged text. Taken remains demo-only feedback.
+8. An unknown named route while signed out must show Login.
 
-```text
+## Security boundaries
+
+- Doctors self-register and are not professionally verified.
+- Doctor role alone never grants patient-record access; an active patient-approved link is required.
+- Code guessing is not server-rate-limited in this Firestore-only prototype.
+- Revocation blocks future server-authorized reads, but cannot recall data already received/cached.
+- Medication/dose permissions are not implemented; their collections remain denied.
+- Local rules/tests are not live deployment. No Firebase deployment is part of this workflow.
+- Fictional coursework data only; production healthcare readiness is outside the project scope.
+
+## Project structure
+
+~~~text
 lib/
   main.dart
-  firebase_options.dart        # FlutterFire configuration
-  firebase_emulators.dart      # opt-in local emulator connection
-  models/
-    adherence_stats.dart
-    doctor_link.dart
-    dose_record.dart
-    medication.dart
-    patient_summary.dart
-    refill.dart
-    reminder.dart
-    user_profile.dart
-  screens/
-    app_shell.dart               # role-specific navigation
-    auth_gate.dart               # chooses screen from auth state and role
-    auth_screen.dart             # Login
-    sign_up_screen.dart          # Sign Up
-    doctor_dashboard_screen.dart
-    medication_editor_screen.dart
-    medications_screen.dart
-    patient_details_screen.dart
-    patient_home_screen.dart
-  services/
-    auth_repository.dart         # interface + AuthException
-    firebase_auth_repository.dart
-    sample_data.dart
-  state/
-    auth_provider.dart
-  widgets/
-    auth_form_widgets.dart       # shared Login/Sign Up widgets and validators
-    status_chip.dart
-test/                            # Flutter unit and widget tests (fake repositories)
-firestore_rules_test/            # Firestore Security Rules tests (emulator)
-firestore.rules                  # Firestore Security Rules
-firebase.json, .firebaserc       # Firebase project and emulator configuration
-```
+  firebase_options.dart
+  firebase_emulators.dart
+  models/       # profiles, links, medication/dose and summary models
+  services/     # repository contracts, Firebase adapters, SampleData
+  state/        # AuthProvider and DoctorLinkProvider
+  screens/      # AuthGate/session navigator, AppShell, feature screens
+  widgets/      # authentication fields/banners and status chips
+test/           # unit/widget regressions using controllable repositories
+firestore_rules_test/  # sequential local-emulator authorization tests
+firestore.rules
+firebase.json, .firebaserc
+~~~
 
-## Packages
-
-Packages in use (see `pubspec.yaml`):
-
-- `firebase_core` ^5.1.0: Initialize Firebase.
-- `firebase_auth` ^7.0.1: Account sign-in and authentication.
-- `cloud_firestore` ^7.1.0: User profiles (later: doctor links, medications, dose records, refill data).
-- `provider` ^6.1.5+1: App-wide authentication state.
-- `flutter_test`, `flutter_lints` (development).
-
-Still planned, subject to team approval:
-
-- `flutter_local_notifications`: Android medication, missed-dose, and refill notifications.
+Dependencies remain Firebase Core/Auth/Firestore and Provider, with flutter_test/flutter_lints for development. Notification dependencies and implementation remain future teammate work.
 
 ## Design and Documentation Tools
 

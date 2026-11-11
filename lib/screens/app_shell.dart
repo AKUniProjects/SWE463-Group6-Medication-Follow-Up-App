@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/user_profile.dart';
 import '../services/sample_data.dart';
 import '../state/auth_provider.dart';
+import '../widgets/auth_form_widgets.dart';
 import 'doctor_code_dialog.dart';
 import 'linked_patients_dashboard.dart';
 import 'medications_screen.dart';
@@ -56,8 +57,21 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final error = context.watch<AuthProvider>().actionErrorMessage;
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: Column(
+        children: [
+          if (error != null)
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: AuthErrorBanner(message: error),
+              ),
+            ),
+          Expanded(child: IndexedStack(index: _selectedIndex, children: _pages)),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {

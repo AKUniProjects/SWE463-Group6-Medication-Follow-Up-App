@@ -25,17 +25,6 @@ void main() {
   });
 
   Future<void> pumpApp(WidgetTester tester) async {
-    // PatientHomeScreen has a known pre-existing RenderFlex overflow that is
-    // out of scope for Task 2.2. Ignore only overflow errors here.
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.exceptionAsString().contains('RenderFlex overflowed')) {
-        return;
-      }
-      originalOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = originalOnError);
-
     // Listen inside the widget test's fake-async zone so profile loads
     // complete during pump().
     auth.dispose();
@@ -119,6 +108,26 @@ void main() {
   });
 
   group('Routing', () {
+    for (final recovery in [false, true]) {
+      testWidgets('sign-out failure is visible and retry works, recovery=$recovery',
+          (tester) async {
+        repo.profiles[patient.id] = patient;
+        await pumpApp(tester);
+        repo.emit(recovery ? 'missing-profile' : patient.id);
+        await tester.pumpAndSettle();
+        repo.failSignOut = true;
+        await tester.tap(find.text('Sign out'));
+        await tester.pumpAndSettle();
+        expect(find.text('Could not sign out. Please try again.'), findsOneWidget);
+        if (!recovery) expect(auth.isPatient, isTrue);
+        repo.failSignOut = false;
+        await tester.tap(find.text('Sign out'));
+        await tester.pumpAndSettle();
+        expect(find.byType(AuthScreen), findsOneWidget);
+        expect(find.text('Could not sign out. Please try again.'), findsNothing);
+      });
+    }
+
     testWidgets('initial loading, then signed out shows auth screen',
         (tester) async {
       await pumpApp(tester);
@@ -186,7 +195,7 @@ void main() {
       repo.emit(null);
       await tester.pump();
 
-      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator).first);
       navigator.pushNamed('/app');
       await tester.pumpAndSettle();
 
@@ -202,7 +211,7 @@ void main() {
       repo.emit('patient-1');
       await tester.pumpAndSettle();
 
-      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator).first);
       navigator.pushNamed('/doctor');
       await tester.pumpAndSettle();
 

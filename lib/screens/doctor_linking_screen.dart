@@ -50,6 +50,7 @@ class _DoctorLinkingScreenState extends State<DoctorLinkingScreen> {
   Future<void> _confirmRevoke(DoctorLink link) async {
     final ok = await showDialog<bool>(
       context: context,
+      useRootNavigator: false,
       builder: (ctx) => AlertDialog(
         title: const Text('Stop sharing?'),
         content: Text(
@@ -114,6 +115,7 @@ class _DoctorLinkingScreenState extends State<DoctorLinkingScreen> {
     final last = links.lastLinked;
     // Success only when the refreshed, persisted list contains the link.
     final confirmed = linked &&
+        links.patientLinksError == null &&
         last != null &&
         links.activeDoctorLinks.any((l) => l.id == last.id);
     if (confirmed) {

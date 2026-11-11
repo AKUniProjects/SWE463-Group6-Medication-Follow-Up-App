@@ -13,8 +13,19 @@ class DoctorDashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Doctor dashboard')),
       body: patients.isEmpty
-          ? const Center(child: Text('No linked patients yet.'))
+          ? LayoutBuilder(
+              builder: (context, constraints) => ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: constraints.maxHeight,
+                    child: const Center(child: Text('No linked patients yet.')),
+                  ),
+                ],
+              ),
+            )
           : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               itemCount: patients.length,
               itemBuilder: (context, index) {

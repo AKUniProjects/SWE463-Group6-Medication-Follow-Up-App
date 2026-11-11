@@ -36,6 +36,8 @@ class DoctorLinkProvider extends ChangeNotifier {
   bool _isDoctor = false;
   int _session = 0;
   bool _disposed = false;
+  int _patientLoad = 0;
+  int _doctorLoad = 0;
 
   List<DoctorCode> _codes = const [];
   bool _hasLoaded = false;
@@ -107,29 +109,34 @@ class DoctorLinkProvider extends ChangeNotifier {
 
   /// Loads (or refreshes) the signed-in doctor's linked patients.
   Future<bool> loadLinkedPatients() async {
+    if (_isBusy) return false;
+    return _loadLinkedPatients();
+  }
+
+  Future<bool> _loadLinkedPatients() async {
     if (!canManageCodes) {
       _linkedPatientsError =
           const DoctorLinkException(DoctorLinkErrorCode.notDoctor).message;
       _notify();
       return false;
     }
-    if (_isLoadingLinkedPatients) return false;
     final session = _session;
+    final request = ++_doctorLoad;
     _isLoadingLinkedPatients = true;
     _linkedPatientsError = null;
     _notify();
     try {
       final patients = await _repository.linkedPatientsForDoctor();
-      if (session != _session) return false;
+      if (session != _session || request != _doctorLoad) return false;
       _linkedPatients = List.unmodifiable(patients);
       _hasLoadedLinkedPatients = true;
       return true;
     } catch (e) {
-      if (session != _session) return false;
+      if (session != _session || request != _doctorLoad) return false;
       _linkedPatientsError = _messageFor(e); // previous list is kept
       return false;
     } finally {
-      if (session == _session) {
+      if (session == _session && request == _doctorLoad) {
         _isLoadingLinkedPatients = false;
         _notify();
       }
@@ -143,12 +150,20 @@ class DoctorLinkProvider extends ChangeNotifier {
     final session = _session;
     _isBusy = true;
     _linkedPatientsError = null;
+    ++_doctorLoad; // invalidate every pre-mutation snapshot
+    _isLoadingLinkedPatients = false;
     _notify();
     try {
       await _repository.revokeLink(patient.link);
       if (session != _session) return false;
+      _linkedPatients = List.unmodifiable(
+        _linkedPatients.where((p) => p.link.id != patient.link.id),
+      );
+      _notify();
+      await _loadLinkedPatients();
+      if (session != _session) return false;
       _isBusy = false;
-      await loadLinkedPatients();
+      _notify();
       return true;
     } catch (e) {
       if (session != _session) return false;
@@ -278,14 +293,23 @@ class DoctorLinkProvider extends ChangeNotifier {
 
     final session = _session;
     _isBusy = true;
+    ++_patientLoad;
+    _isLoadingPatientLinks = false;
     _setLink(PatientLinkStatus.linking, null);
     try {
       final link = await _repository.linkWithCode(
         preview.code,
         consentGiven: consentGiven,
+        expectedDoctorId: preview.doctorId,
       );
       if (session != _session) return false;
       _lastLinked = link;
+      // The write was acknowledged. Keep it even if the follow-up read fails.
+      _patientLinks = List.unmodifiable([
+        ..._patientLinks.where((l) => l.id != link.id),
+        link,
+      ]);
+      _hasLoadedPatientLinks = true;
       await _refreshPatientLinks(session);
       if (session != _session) return false;
       _isBusy = false;
@@ -301,16 +325,8 @@ class DoctorLinkProvider extends ChangeNotifier {
 
   /// Loads the signed-in patient's links (active and revoked).
   Future<bool> loadPatientLinks() async {
-    if (!_checkPatient() || _isLoadingPatientLinks) return false;
-    final session = _session;
-    _isLoadingPatientLinks = true;
-    _patientLinksError = null;
-    _notify();
-    final ok = await _refreshPatientLinks(session);
-    if (session != _session) return false;
-    _isLoadingPatientLinks = false;
-    _notify();
-    return ok;
+    if (!_checkPatient() || _isBusy) return false;
+    return _refreshPatientLinks(_session);
   }
 
   /// Revokes an active link (patient side), then refreshes the list.
@@ -319,10 +335,29 @@ class DoctorLinkProvider extends ChangeNotifier {
     final session = _session;
     _isBusy = true;
     _patientLinksError = null;
+    ++_patientLoad;
+    _isLoadingPatientLinks = false;
     _notify();
     try {
       await _repository.revokeLink(link);
       if (session != _session) return false;
+      _patientLinks = List.unmodifiable([
+        for (final l in _patientLinks)
+          if (l.id != link.id)
+            l
+          else
+            DoctorLink(
+              id: l.id,
+              patientId: l.patientId,
+              doctorId: l.doctorId,
+              linkCode: l.linkCode,
+              status: LinkStatus.revoked,
+              patientName: l.patientName,
+              doctorName: l.doctorName,
+              consentedAt: l.consentedAt,
+              revokedBy: _uid,
+            ),
+      ]);
       await _refreshPatientLinks(session);
       if (session != _session) return false;
       _isBusy = false;
@@ -370,6 +405,7 @@ class DoctorLinkProvider extends ChangeNotifier {
 
   void _setLinkFailure(Object error) {
     final code = error is DoctorLinkException ? error.code : null;
+    if (code == DoctorLinkErrorCode.doctorChanged) _preview = null;
     final status = switch (code) {
       DoctorLinkErrorCode.invalidCodeFormat ||
       DoctorLinkErrorCode.codeNotFound ||
@@ -391,15 +427,26 @@ class DoctorLinkProvider extends ChangeNotifier {
 
   /// Re-reads the patient's links; keeps the old list on failure.
   Future<bool> _refreshPatientLinks(int session) async {
+    final request = ++_patientLoad;
+    _isLoadingPatientLinks = true;
+    _patientLinksError = null;
+    _notify();
     try {
       final links = await _repository.linksForPatient();
-      if (session != _session) return false;
+      if (session != _session || request != _patientLoad) return false;
       _patientLinks = List.unmodifiable(links);
       _hasLoadedPatientLinks = true;
       return true;
     } catch (e) {
-      if (session == _session) _patientLinksError = _messageFor(e);
+      if (session == _session && request == _patientLoad) {
+        _patientLinksError = _messageFor(e);
+      }
       return false;
+    } finally {
+      if (session == _session && request == _patientLoad) {
+        _isLoadingPatientLinks = false;
+        _notify();
+      }
     }
   }
 

@@ -337,6 +337,7 @@ class FirebaseDoctorLinkRepository implements DoctorLinkRepository {
   Future<DoctorLink> linkWithCode(
     String input, {
     required bool consentGiven,
+    required String expectedDoctorId,
   }) =>
       _run(() async {
         if (!consentGiven) {
@@ -345,6 +346,9 @@ class FirebaseDoctorLinkRepository implements DoctorLinkRepository {
         final uid = _requireUid();
         final profile = await _requireRole(uid, 'patient');
         final code = await lookupCode(input);
+        if (code.doctorId != expectedDoctorId) {
+          throw const DoctorLinkException(DoctorLinkErrorCode.doctorChanged);
+        }
         if (code.doctorId == uid) {
           throw const DoctorLinkException(DoctorLinkErrorCode.ownCode);
         }
