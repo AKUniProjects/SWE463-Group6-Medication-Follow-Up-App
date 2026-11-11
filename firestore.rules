@@ -168,7 +168,122 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Everything else (medications, dose records, ...) stays closed until
+    // Person 2: one canonical medication/supply document. Soft deletion
+    // keeps medication metadata available to historical dose records.
+    function isPatientOwner(patientId) {
+      return signedIn() && me() == patientId && profile(me()).role == 'patient';
+    }
+
+    function canReadMedication(patientId) {
+      return isPatientOwner(patientId)
+        || (signedIn() && profile(me()).role == 'doctor'
+            && hasActiveLink(patientId, me()));
+    }
+
+    function validDailyTime(time) {
+      return time is string && time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+    }
+
+    function validMedicationTimes(times) {
+      // Rules have no loops. Validate each of the 24 allowed positions.
+      return times is list && times.size() > 0 && times.size() <= 24
+          && times.toSet().size() == times.size()
+          && (times.size() <= 0 || validDailyTime(times[0]))
+          && (times.size() <= 1 || validDailyTime(times[1]))
+          && (times.size() <= 2 || validDailyTime(times[2]))
+          && (times.size() <= 3 || validDailyTime(times[3]))
+          && (times.size() <= 4 || validDailyTime(times[4]))
+          && (times.size() <= 5 || validDailyTime(times[5]))
+          && (times.size() <= 6 || validDailyTime(times[6]))
+          && (times.size() <= 7 || validDailyTime(times[7]))
+          && (times.size() <= 8 || validDailyTime(times[8]))
+          && (times.size() <= 9 || validDailyTime(times[9]))
+          && (times.size() <= 10 || validDailyTime(times[10]))
+          && (times.size() <= 11 || validDailyTime(times[11]))
+          && (times.size() <= 12 || validDailyTime(times[12]))
+          && (times.size() <= 13 || validDailyTime(times[13]))
+          && (times.size() <= 14 || validDailyTime(times[14]))
+          && (times.size() <= 15 || validDailyTime(times[15]))
+          && (times.size() <= 16 || validDailyTime(times[16]))
+          && (times.size() <= 17 || validDailyTime(times[17]))
+          && (times.size() <= 18 || validDailyTime(times[18]))
+          && (times.size() <= 19 || validDailyTime(times[19]))
+          && (times.size() <= 20 || validDailyTime(times[20]))
+          && (times.size() <= 21 || validDailyTime(times[21]))
+          && (times.size() <= 22 || validDailyTime(times[22]))
+          && (times.size() <= 23 || validDailyTime(times[23]));
+    }
+
+    function validMedication(d) {
+      return d.keys().hasOnly(['patientId', 'name', 'doseAmount', 'doseUnit',
+          'scheduledTimes', 'stockAmount', 'refillThreshold', 'isActive',
+          'stockUnit', 'unitsPerDose', 'revision'])
+        && d.keys().hasAll(['patientId', 'name', 'doseAmount', 'doseUnit',
+          'scheduledTimes', 'stockAmount', 'refillThreshold', 'isActive',
+          'stockUnit', 'unitsPerDose', 'revision'])
+        && d.patientId is string
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 100
+        && d.name == d.name.trim()
+        && d.doseAmount is number && d.doseAmount > 0 && d.doseAmount <= 1000000000
+        && d.doseUnit in ['tablet', 'capsule', 'mg', 'ml', 'IU']
+        && validMedicationTimes(d.scheduledTimes)
+        && d.stockAmount is int && d.stockAmount >= 0 && d.stockAmount <= 1000000000
+        && d.refillThreshold is int && d.refillThreshold >= 0 && d.refillThreshold <= 1000000000
+        && d.isActive is bool
+        && d.stockUnit in ['tablet', 'capsule', 'ml', 'IU', 'package', 'unit']
+        && (d.unitsPerDose == null || (d.unitsPerDose is int
+            && d.unitsPerDose > 0 && d.unitsPerDose <= 1000000000))
+        && d.revision is int && d.revision > 0;
+    }
+
+    match /medications/{medicationId} {
+      // A creation transaction first reads its absent random document.
+      allow get: if (signedIn() && !exists(/databases/$(database)/documents/medications/$(medicationId))
+          && profile(me()).role == 'patient')
+        || canReadMedication(resource.data.patientId);
+      // Queries must include patientId equality. Rules are not filters.
+      allow list: if canReadMedication(resource.data.patientId);
+      allow create: if isPatientOwner(request.resource.data.patientId)
+        && validMedication(request.resource.data)
+        && request.resource.data.revision == 1
+        && request.resource.data.isActive == true;
+      allow update: if isPatientOwner(resource.data.patientId)
+        && request.resource.data.patientId == resource.data.patientId
+        && resource.data.isActive == true
+        && validMedication(request.resource.data)
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
+
+      // A receipt and deduction commit together. Receipts never change.
+      match /consumptions/{doseId} {
+        function medicationBefore() {
+          return get(/databases/$(database)/documents/medications/$(medicationId)).data;
+        }
+        function validReceipt(d) {
+          let before = medicationBefore();
+          let after = getAfter(/databases/$(database)/documents/medications/$(medicationId)).data;
+          return d.keys().hasOnly(['patientId', 'doseRecordId', 'units', 'revision', 'createdAt'])
+            && d.keys().hasAll(['patientId', 'doseRecordId', 'units', 'revision', 'createdAt'])
+            && d.patientId == before.patientId
+            && d.doseRecordId == doseId
+            && d.doseRecordId.matches('^[A-Za-z0-9_-][A-Za-z0-9_.:-]{0,299}$')
+            && d.units is int && d.units > 0 && d.units == before.unitsPerDose
+            && d.revision == before.revision + 1 && d.revision == after.revision
+            && before.isActive == true && after.isActive == true
+            && after.stockAmount == before.stockAmount - d.units
+            && after.stockAmount >= 0
+            && after.diff(before).affectedKeys().hasOnly(['stockAmount', 'revision'])
+            && d.createdAt == request.time;
+        }
+        allow get: if isPatientOwner(medicationBefore().patientId);
+        allow list: if false;
+        allow create: if isPatientOwner(medicationBefore().patientId)
+          && validReceipt(request.resource.data);
+        allow update, delete: if false;
+      }
+    }
+
+    // Everything else (dose records, ...) stays closed until
     // each feature defines its own rules.
     match /{document=**} {
       allow read, write: if false;
