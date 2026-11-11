@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user_profile.dart';
-import '../services/sample_data.dart';
 import '../state/auth_provider.dart';
+import '../state/medication_provider.dart';
 import '../widgets/auth_form_widgets.dart';
 import 'doctor_code_dialog.dart';
 import 'linked_patients_dashboard.dart';
 import 'medications_screen.dart';
 import 'patient_home_screen.dart';
+import 'medication_editor_screen.dart';
+import 'refill_tracking_screen.dart';
 
 /// Role-specific navigation. Patients never get the doctor dashboard tab.
 class AppShell extends StatefulWidget {
@@ -23,40 +25,63 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
-  late final List<Widget> _pages = widget.role == UserRole.doctor
-      ? [const LinkedPatientsDashboard()] // real linked patients (Task 3.6)
-      : [
-          PatientHomeScreen(
-            medications: SampleData.medications,
-            doseRecords: SampleData.doseRecords,
-          ),
-          MedicationsScreen(medications: SampleData.medications),
-        ];
+  Future<void> _editMedication(String id) async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    setState(() => _selectedIndex = 1);
+    final message = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => MedicationEditorScreen(medicationId: id),
+      ),
+    );
+    if (mounted && message != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
 
   late final List<NavigationDestination> _destinations =
       widget.role == UserRole.doctor
-          ? const [
-              NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard),
-                label: 'Dashboard',
-              ),
-            ]
-          : const [
-              NavigationDestination(
-                icon: Icon(Icons.today_outlined),
-                selectedIcon: Icon(Icons.today),
-                label: 'Today',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.medication_outlined),
-                selectedIcon: Icon(Icons.medication),
-                label: 'Medications',
-              ),
-            ];
+      ? const [
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+        ]
+      : const [
+          NavigationDestination(
+            icon: Icon(Icons.today_outlined),
+            selectedIcon: Icon(Icons.today),
+            label: 'Today',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.medication_outlined),
+            selectedIcon: Icon(Icons.medication),
+            label: 'Medications',
+          ),
+        ];
 
   @override
   Widget build(BuildContext context) {
+    final pages = widget.role == UserRole.doctor
+        ? [const LinkedPatientsDashboard()]
+        : [
+            PatientHomeScreen(
+              medications: context
+                  .watch<MedicationProvider>()
+                  .activeMedications,
+              doseRecords: const [],
+              displayName:
+                  context.watch<AuthProvider>().userProfile?.displayName ??
+                  'Patient',
+              doseTrackingAvailable: false,
+              onMedicationTap: _editMedication,
+              onRefills: () => Navigator.of(context).push<void>(
+                MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),
+              ),
+            ),
+            const MedicationsScreen(),
+          ];
     final error = context.watch<AuthProvider>().actionErrorMessage;
     return Scaffold(
       body: Column(
@@ -69,7 +94,9 @@ class _AppShellState extends State<AppShell> {
                 child: AuthErrorBanner(message: error),
               ),
             ),
-          Expanded(child: IndexedStack(index: _selectedIndex, children: _pages)),
+          Expanded(
+            child: IndexedStack(index: _selectedIndex, children: pages),
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -77,11 +104,11 @@ class _AppShellState extends State<AppShell> {
         onDestinationSelected: (index) {
           // Destinations after the pages are actions, not pages.
           final isDoctor = widget.role == UserRole.doctor;
-          if (isDoctor && index == _pages.length) {
+          if (isDoctor && index == pages.length) {
             showDoctorCodeDialog(context);
             return;
           }
-          if (index == _pages.length + (isDoctor ? 1 : 0)) {
+          if (index == pages.length + (isDoctor ? 1 : 0)) {
             context.read<AuthProvider>().signOut();
             return;
           }

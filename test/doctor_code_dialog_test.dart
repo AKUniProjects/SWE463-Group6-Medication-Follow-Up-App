@@ -11,7 +11,12 @@ import 'package:medication_follow_up_app/services/doctor_link_repository.dart';
 import 'package:medication_follow_up_app/state/doctor_link_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:medication_follow_up_app/state/auth_provider.dart';
+
 import 'support/controllable_auth_repository.dart';
+import 'support/memory_medication_store.dart';
+
+import 'package:medication_follow_up_app/services/medication_repository.dart';
+import 'package:medication_follow_up_app/state/medication_provider.dart';
 
 DoctorCode code(String id, {bool active = true, DateTime? createdAt}) =>
     DoctorCode(
@@ -41,8 +46,10 @@ class FakeRepo implements DoctorLinkRepository {
 
   @override
   Future<DoctorCode> createCode() async {
-    final c =
-        code('NEWCODE${_n++}AB'.substring(0, 10), createdAt: DateTime.now());
+    final c = code(
+      'NEWCODE${_n++}AB'.substring(0, 10),
+      createdAt: DateTime.now(),
+    );
     stored.add(c);
     return c;
   }
@@ -115,8 +122,9 @@ void main() {
     expect(find.text('Code created'), findsOneWidget);
   });
 
-  testWidgets('shows active code with expiry and copies canonical value',
-      (tester) async {
+  testWidgets('shows active code with expiry and copies canonical value', (
+    tester,
+  ) async {
     repo.stored = [
       DoctorCode(
         code: 'ABCDEFGH23',
@@ -136,8 +144,12 @@ void main() {
         return null;
       },
     );
-    addTearDown(() => tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, null));
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
 
     await openDialog(tester);
     await tester.pumpAndSettle();
@@ -161,8 +173,12 @@ void main() {
         return null;
       },
     );
-    addTearDown(() => tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, null));
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
 
     await openDialog(tester);
     await tester.pumpAndSettle();
@@ -172,11 +188,14 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('inactive and expired codes are not shown as usable',
-      (tester) async {
+  testWidgets('inactive and expired codes are not shown as usable', (
+    tester,
+  ) async {
     repo.stored = [
-      code('EXPIRED234',
-          createdAt: DateTime.now().subtract(const Duration(days: 31))),
+      code(
+        'EXPIRED234',
+        createdAt: DateTime.now().subtract(const Duration(days: 31)),
+      ),
       code('INACTIVE23', active: false),
     ];
     await openDialog(tester);
@@ -248,13 +267,16 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('patients see a restriction and trigger no reads',
-      (tester) async {
+  testWidgets('patients see a restriction and trigger no reads', (
+    tester,
+  ) async {
     links.updateSession(uid: 'pat', isDoctor: false);
     await openDialog(tester);
     await tester.pumpAndSettle();
-    expect(find.text('Only doctor accounts can manage linking codes.'),
-        findsOneWidget);
+    expect(
+      find.text('Only doctor accounts can manage linking codes.'),
+      findsOneWidget,
+    );
     expect(repo.loads, 0);
   });
 
@@ -271,6 +293,14 @@ void main() {
           providers: [
             ChangeNotifierProvider<DoctorLinkProvider>.value(value: links),
             ChangeNotifierProvider<AuthProvider>.value(value: auth),
+            ChangeNotifierProvider<MedicationProvider>(
+              create: (_) => MedicationProvider(
+                StoredMedicationRepository(
+                  MemoryMedicationStore(),
+                  currentPatientId: () => null,
+                ),
+              ),
+            ),
           ],
           child: MaterialApp(home: AppShell(role: role)),
         ),
