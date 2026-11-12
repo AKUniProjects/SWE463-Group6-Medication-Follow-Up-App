@@ -37,4 +37,19 @@ class DoseRecord {
   /// For example 1 and 'tablet'. Null in older demo data.
   final double? doseAmount;
   final String? doseUnit;
+
+  /// A copy with a new [status] and, when taken, a [confirmedAt] time.
+  /// Only these two fields ever change for a dose.
+  DoseRecord copyWith({DoseStatus? status, DateTime? confirmedAt}) =>
+      DoseRecord(
+        id: id,
+        medicationId: medicationId,
+        patientId: patientId,
+        medicationName: medicationName,
+        scheduledTime: scheduledTime,
+        status: status ?? this.status,
+        confirmedAt: confirmedAt ?? this.confirmedAt,
+        doseAmount: doseAmount,
+        doseUnit: doseUnit,
+      );
 }
