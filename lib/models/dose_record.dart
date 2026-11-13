@@ -52,4 +52,31 @@ class DoseRecord {
         doseAmount: doseAmount,
         doseUnit: doseUnit,
       );
+
+  /// Fields saved in Firestore (`doseRecords/{id}`). The ID is the document
+  /// name, so it is not repeated inside. Dates stay `DateTime` here; the
+  /// Firestore store converts them to and from Firestore `Timestamp`s.
+  Map<String, dynamic> toMap() => {
+    'patientId': patientId,
+    'medicationId': medicationId,
+    'medicationName': medicationName,
+    'scheduledTime': scheduledTime,
+    'status': status.name,
+    'confirmedAt': confirmedAt,
+    'doseAmount': doseAmount,
+    'doseUnit': doseUnit,
+  };
+
+  factory DoseRecord.fromMap(String id, Map<String, dynamic> data) =>
+      DoseRecord(
+        id: id,
+        patientId: data['patientId'] as String,
+        medicationId: data['medicationId'] as String,
+        medicationName: data['medicationName'] as String,
+        scheduledTime: data['scheduledTime'] as DateTime,
+        status: DoseStatus.values.byName(data['status'] as String),
+        confirmedAt: data['confirmedAt'] as DateTime?,
+        doseAmount: (data['doseAmount'] as num?)?.toDouble(),
+        doseUnit: data['doseUnit'] as String?,
+      );
 }
