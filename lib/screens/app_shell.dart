@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/dose_record.dart';
+import '../models/medication.dart';
 import '../models/user_profile.dart';
+import '../services/notification_service.dart';
+import '../widgets/notifications_overlay.dart';
 import '../state/auth_provider.dart';
 import '../state/dose_provider.dart';
 import 'dose_confirmed_screen.dart';
@@ -28,17 +33,35 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _selectedIndex = 0;
+  StreamSubscription<ReminderPayload?>? _reminderTaps;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (widget.role == UserRole.patient) {
+      // Optional: null in tests that do not provide notifications.
+      final notifications = context.read<NotificationService?>();
+      // Ask "Allow notifications?" when the patient's app opens (Android
+      // shows the prompt only while the choice is still open).
+      unawaited(notifications?.requestPermission());
+      // A tapped reminder opens Today (decision 10).
+      _reminderTaps = notifications?.taps.listen((_) => _openToday());
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(_reminderTaps?.cancel());
     super.dispose();
+  }
+
+  /// Closes any page on top and shows the Today tab.
+  void _openToday() {
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    setState(() => _selectedIndex = 0);
   }
 
   /// Re-check overdue/missed when the patient returns to the app.
@@ -123,13 +146,17 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     final doses = widget.role == UserRole.patient
         ? context.watch<DoseProvider>()
         : null;
+    final medications = widget.role == UserRole.patient
+        ? context.watch<MedicationProvider>().activeMedications
+        : const <Medication>[];
+    void openRefills() => Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),
+    );
     final pages = doses == null
         ? [const LinkedPatientsDashboard()]
         : [
             PatientHomeScreen(
-              medications: context
-                  .watch<MedicationProvider>()
-                  .activeMedications,
+              medications: medications,
               doseRecords: doses.todayDoses,
               displayName:
                   context.watch<AuthProvider>().userProfile?.displayName ??
@@ -143,9 +170,15 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               isConfirming: doses.isConfirming,
               reviewCount: doses.needsReview.length,
               onMedicationTap: _editMedication,
-              onRefills: () => Navigator.of(context).push<void>(
-                MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),
+              onRefills: openRefills,
+              // Feature #3: the bell and its badge use live state only.
+              onNotifications: () => showNotificationsOverlay(
+                context,
+                onOpenToday: () => setState(() => _selectedIndex = 0),
+                onRefills: openRefills,
               ),
+              notificationCount:
+                  doses.dueNow.length + lowStockMedications(medications).length,
             ),
             const MedicationsScreen(),
             DoseHistoryScreen(

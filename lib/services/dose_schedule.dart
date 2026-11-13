@@ -33,7 +33,7 @@ List<DoseRecord> scheduledDosesForDay({
     if (!medication.isActive || medication.patientId != patientId) continue;
 
     for (final time in medication.scheduledTimes) {
-      final parts = _parseTime(time);
+      final parts = parseDoseTime(time);
       if (parts == null) continue; // Person 2 validates; skip bad data safely.
 
       doses.add(
@@ -88,7 +88,8 @@ List<DoseRecord> mergeWithSaved({
 }
 
 /// Parses "HH:mm" into hour and minute, or returns null if malformed.
-({int hour, int minute})? _parseTime(String time) {
+/// Also used by the notification service (same times, same rule).
+({int hour, int minute})? parseDoseTime(String time) {
   final match = RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$').firstMatch(time);
   if (match == null) return null;
   return (hour: int.parse(match.group(1)!), minute: int.parse(match.group(2)!));

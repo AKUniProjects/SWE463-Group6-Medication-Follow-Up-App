@@ -26,6 +26,8 @@ class PatientHomeScreen extends StatelessWidget {
     this.onReview,
     this.onMedicationTap,
     this.onRefills,
+    this.onNotifications,
+    this.notificationCount = 0,
     super.key,
   });
 
@@ -57,6 +59,11 @@ class PatientHomeScreen extends StatelessWidget {
   final ValueChanged<String>? onMedicationTap;
   final VoidCallback? onRefills;
 
+  /// The bell: opens the Notifications overlay. [notificationCount] is the
+  /// number of live reminders (due doses + low stock), shown as a badge.
+  final VoidCallback? onNotifications;
+  final int notificationCount;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
@@ -82,9 +89,13 @@ class PatientHomeScreen extends StatelessWidget {
             icon: const Icon(Icons.people_alt_outlined),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: onNotifications,
             tooltip: 'Notifications',
-            icon: const Icon(Icons.notifications_none),
+            icon: Badge(
+              isLabelVisible: notificationCount > 0,
+              label: Text('$notificationCount'),
+              child: const Icon(Icons.notifications_none),
+            ),
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:medication_follow_up_app/services/medication_repository.dart';
 import 'package:medication_follow_up_app/state/medication_provider.dart';
 
 import 'package:medication_follow_up_app/services/dose_repository.dart';
+import 'package:medication_follow_up_app/services/notification_service.dart';
 import 'package:medication_follow_up_app/state/dose_provider.dart';
 
 import 'memory_dose_store.dart';
@@ -29,10 +30,14 @@ Widget appWithProviders(
   MedicationRepository? medications,
   MemoryDoseStore? doseStore,
   DateTime Function()? doseClock,
+  NotificationService? notifications,
 }) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<AuthProvider>.value(value: auth),
+      // Feature #3: only in tests that check reminders (others run without).
+      if (notifications != null)
+        ChangeNotifierProvider<NotificationService>.value(value: notifications),
       ChangeNotifierProxyProvider<AuthProvider, MedicationProvider>(
         create: (_) => MedicationProvider(
           medications ??
@@ -40,6 +45,7 @@ Widget appWithProviders(
                 MemoryMedicationStore(),
                 currentPatientId: () => auth.isPatient ? auth.userId : null,
               ),
+          reminders: notifications,
         ),
         update: (_, a, medications) =>
             medications!..updateSession(a.isPatient ? a.userId : null),

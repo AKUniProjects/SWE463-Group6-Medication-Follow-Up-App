@@ -116,6 +116,18 @@ class DoseProvider extends ChangeNotifier {
       if (dose.status == DoseStatus.overdue) dose,
   ];
 
+  /// Doses whose time has come but are not overdue yet ("Medication due"
+  /// in the notifications overlay and the Due Reminder page).
+  List<DoseRecord> get dueNow {
+    final now = _now();
+    return [
+      for (final dose in _today)
+        if (dose.status == DoseStatus.scheduled &&
+            !dose.scheduledTime.isAfter(now))
+          dose,
+    ];
+  }
+
   bool isPending(String doseId) => _pending.contains(doseId);
 
   /// True while any dose is being saved: every Taken button is disabled,

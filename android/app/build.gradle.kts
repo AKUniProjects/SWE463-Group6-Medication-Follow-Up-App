@@ -9,10 +9,15 @@ plugins {
 
 android {
     namespace = "com.example.medication_follow_up_app"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23 needs compileSdk 37 (Flutter's default
+    // is 36). This only affects compiling; minSdk/targetSdk are unchanged.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Required by flutter_local_notifications (scheduled notifications
+        // on older Android versions).
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -49,4 +54,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
