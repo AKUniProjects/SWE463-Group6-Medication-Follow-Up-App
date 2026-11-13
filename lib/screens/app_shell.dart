@@ -6,6 +6,7 @@ import '../models/user_profile.dart';
 import '../state/auth_provider.dart';
 import '../state/dose_provider.dart';
 import 'dose_confirmed_screen.dart';
+import 'dose_history_screen.dart';
 import '../state/medication_provider.dart';
 import '../widgets/auth_form_widgets.dart';
 import 'doctor_code_dialog.dart';
@@ -109,6 +110,12 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
             selectedIcon: Icon(Icons.medication),
             label: 'Medications',
           ),
+          // Person 1: patient Dose History (Phase 2 frame 07).
+          NavigationDestination(
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history),
+            label: 'History',
+          ),
         ];
 
   @override
@@ -141,6 +148,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               ),
             ),
             const MedicationsScreen(),
+            DoseHistoryScreen(
+              onBackToToday: () => setState(() => _selectedIndex = 0),
+            ),
           ];
     final error = context.watch<AuthProvider>().actionErrorMessage;
     return Scaffold(

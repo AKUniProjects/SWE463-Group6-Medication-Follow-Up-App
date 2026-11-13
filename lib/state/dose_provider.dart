@@ -103,6 +103,9 @@ class DoseProvider extends ChangeNotifier {
   String? confirmError;
 
   String? get patientId => _patientId;
+
+  /// The provider's clock (fixed in tests), for "Today"/"Yesterday" labels.
+  DateTime get now => _now();
   List<DoseRecord> get todayDoses => _today;
 
   /// Today's overdue doses ("1 unconfirmed dose needs your review").
