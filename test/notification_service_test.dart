@@ -199,6 +199,20 @@ void main() {
     await tapped;
   });
 
+  test('a tap that started the app is returned once', () async {
+    plugin.launchedWith = const ReminderPayload(
+      kind: ReminderKind.followUp,
+      patientId: 'patient-1',
+      medicationId: 'm1',
+      time: '08:00',
+    ).encode();
+
+    final first = await service.takeLaunchTap();
+    expect(first?.kind, ReminderKind.followUp);
+    // Read once: a second sign-in must not reopen the page.
+    expect(await service.takeLaunchTap(), isNull);
+  });
+
   test('notification IDs are stable and positive', () {
     expect(notificationId('dose/p/m/08:00'), notificationId('dose/p/m/08:00'));
     expect(

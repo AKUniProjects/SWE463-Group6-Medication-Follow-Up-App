@@ -18,12 +18,13 @@ void main() {
 
   /// Signs in the fictional patient at 08:40 with a medication at 08:00
   /// and 20:00, so the 08:00 dose is overdue (+30 min) and not confirmed.
-  Future<void> openToday(WidgetTester tester) async {
+  /// [launchedWith]: pretend tapping this notification started the app.
+  Future<void> openToday(WidgetTester tester, {String? launchedWith}) async {
     final authRepo = ControllableAuthRepository()
       ..profiles[patient.id] = patient;
     final auth = AuthProvider(authRepo)..start();
     final medicationStore = MemoryMedicationStore();
-    plugin = FakeNotificationPlugin();
+    plugin = FakeNotificationPlugin()..launchedWith = launchedWith;
     final medications = StoredMedicationRepository(
       medicationStore,
       currentPatientId: () => auth.isPatient ? auth.userId : null,
@@ -116,6 +117,21 @@ void main() {
 
     expect(find.byType(MissedDoseScreen), findsNothing);
     expect(find.text("Today's medications"), findsOneWidget);
+  });
+
+  testWidgets('a follow-up tap that started the closed app opens the page', (
+    tester,
+  ) async {
+    await openToday(
+      tester,
+      launchedWith: const ReminderPayload(
+        kind: ReminderKind.followUp,
+        patientId: 'patient-1',
+        medicationId: 'any',
+        time: '08:00',
+      ).encode(),
+    );
+    expect(find.byType(MissedDoseScreen), findsOneWidget);
   });
 
   testWidgets('tapping a follow-up notification opens the page', (

@@ -86,6 +86,10 @@ class PendingReminder {
 /// The few plugin calls the service needs.
 abstract class NotificationPlugin {
   Future<void> initialize({required void Function(String? payload) onTap});
+
+  /// Payload of the notification whose tap STARTED the app (it was
+  /// closed), or null. [initialize]'s onTap only sees taps while running.
+  Future<String?> launchPayload();
   Future<bool> areNotificationsEnabled();
   Future<void> requestPermission();
   Future<bool> canScheduleExact();
@@ -158,6 +162,19 @@ class NotificationService extends ChangeNotifier
   /// A notification was tapped while the app was running.
   Stream<ReminderPayload?> get taps => _taps.stream;
 
+  /// The tap that started the app, kept until [takeLaunchTap] reads it.
+  ReminderPayload? _launchTap;
+
+  /// Returns the notification tap that started the app (null if the app
+  /// was opened normally). It is cleared after the first read, so signing
+  /// out and in again does not reopen the same page.
+  Future<ReminderPayload?> takeLaunchTap() async {
+    await start();
+    final tap = _launchTap;
+    _launchTap = null;
+    return tap;
+  }
+
   @override
   bool get isAvailable => supported;
 
@@ -170,6 +187,7 @@ class NotificationService extends ChangeNotifier
     await plugin.initialize(
       onTap: (payload) => _taps.add(ReminderPayload.decode(payload)),
     );
+    _launchTap = ReminderPayload.decode(await plugin.launchPayload());
     await refreshStatus();
   }
 
@@ -460,6 +478,13 @@ class LocalNotificationsPlugin implements NotificationPlugin {
       ),
       onDidReceiveNotificationResponse: (response) => onTap(response.payload),
     );
+  }
+
+  @override
+  Future<String?> launchPayload() async {
+    final details = await _plugin.getNotificationAppLaunchDetails();
+    if (details == null || !details.didNotificationLaunchApp) return null;
+    return details.notificationResponse?.payload;
   }
 
   @override

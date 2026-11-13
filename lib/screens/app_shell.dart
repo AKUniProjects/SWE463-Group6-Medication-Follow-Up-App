@@ -48,12 +48,21 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       unawaited(notifications?.requestPermission());
       // A tapped reminder opens Today (decision 10); a tapped follow-up
       // opens the Missed Follow-up page (#6).
-      _reminderTaps = notifications?.taps.listen((payload) {
-        _openToday();
-        if (mounted && payload?.kind == ReminderKind.followUp) {
-          _openMissedFollowUp();
-        }
-      });
+      _reminderTaps = notifications?.taps.listen(_openFromNotification);
+      // A tap while the app was closed starts the app instead, and Android
+      // keeps it as "launch details": handle that tap the same way.
+      unawaited(
+        notifications?.takeLaunchTap().then((payload) {
+          if (payload != null) _openFromNotification(payload);
+        }),
+      );
+    }
+  }
+
+  void _openFromNotification(ReminderPayload? payload) {
+    _openToday();
+    if (mounted && payload?.kind == ReminderKind.followUp) {
+      _openMissedFollowUp();
     }
   }
 

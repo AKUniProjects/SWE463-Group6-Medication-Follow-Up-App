@@ -49,6 +49,12 @@ class FakeNotificationPlugin implements NotificationPlugin {
     _onTap = onTap;
   }
 
+  /// Set before start-up to pretend tapping this payload launched the app.
+  String? launchedWith;
+
+  @override
+  Future<String?> launchPayload() async => launchedWith;
+
   @override
   Future<bool> areNotificationsEnabled() async => enabled;
 
