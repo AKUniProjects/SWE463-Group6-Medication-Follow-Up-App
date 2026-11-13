@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/dose_record.dart';
 import '../models/user_profile.dart';
 import '../state/auth_provider.dart';
+import '../state/dose_provider.dart';
+import 'dose_confirmed_screen.dart';
 import '../state/medication_provider.dart';
 import '../widgets/auth_form_widgets.dart';
 import 'doctor_code_dialog.dart';
@@ -22,8 +25,55 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Re-check overdue/missed when the patient returns to the app.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && widget.role == UserRole.patient) {
+      context.read<DoseProvider>().evaluateStatuses();
+    }
+  }
+
+  /// Mark as Taken: save first, then show 04b only if the save worked.
+  Future<void> _confirmDose(DoseRecord dose) async {
+    final doses = context.read<DoseProvider>();
+    final confirmation = await doses.confirm(dose);
+    if (!mounted) return;
+    if (confirmation == null) {
+      // Null without an error means a second tap while saving: ignore.
+      final error = doses.confirmError;
+      if (error == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _confirmDose(dose),
+          ),
+        ),
+      );
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => DoseConfirmedScreen(confirmation: confirmation),
+      ),
+    );
+  }
 
   Future<void> _editMedication(String id) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -63,18 +113,28 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = widget.role == UserRole.doctor
+    final doses = widget.role == UserRole.patient
+        ? context.watch<DoseProvider>()
+        : null;
+    final pages = doses == null
         ? [const LinkedPatientsDashboard()]
         : [
             PatientHomeScreen(
               medications: context
                   .watch<MedicationProvider>()
                   .activeMedications,
-              doseRecords: const [],
+              doseRecords: doses.todayDoses,
               displayName:
                   context.watch<AuthProvider>().userProfile?.displayName ??
                   'Patient',
-              doseTrackingAvailable: false,
+              progress: doses.progress,
+              isLoadingDoses: doses.isLoading,
+              doseError: doses.errorMessage,
+              onRetryDoses: doses.retry,
+              onTaken: _confirmDose,
+              isPending: doses.isPending,
+              isConfirming: doses.isConfirming,
+              reviewCount: doses.needsReview.length,
               onMedicationTap: _editMedication,
               onRefills: () => Navigator.of(context).push<void>(
                 MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),

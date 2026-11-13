@@ -14,6 +14,10 @@ import 'package:medication_follow_up_app/state/auth_provider.dart';
 
 import 'support/controllable_auth_repository.dart';
 import 'support/memory_medication_store.dart';
+import 'support/memory_dose_store.dart';
+
+import 'package:medication_follow_up_app/services/dose_repository.dart';
+import 'package:medication_follow_up_app/state/dose_provider.dart';
 
 import 'package:medication_follow_up_app/services/medication_repository.dart';
 import 'package:medication_follow_up_app/state/medication_provider.dart';
@@ -299,6 +303,16 @@ void main() {
                   MemoryMedicationStore(),
                   currentPatientId: () => null,
                 ),
+              ),
+            ),
+            // The patient shell shows Today, which reads dose state.
+            ChangeNotifierProvider<DoseProvider>(
+              create: (_) => DoseProvider(
+                StoredDoseRepository(
+                  MemoryDoseStore(),
+                  currentPatientId: () => null,
+                ),
+                tickInterval: null,
               ),
             ),
           ],

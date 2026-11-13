@@ -2,30 +2,71 @@ import 'package:flutter/material.dart';
 
 import '../models/dose_record.dart';
 import '../models/medication.dart';
-import '../widgets/status_chip.dart';
+import '../state/dose_provider.dart';
+import '../widgets/dose_widgets.dart';
 import '../widgets/medication_widgets.dart';
 import 'doctor_linking_screen.dart';
 
+/// 04 Patient Home (Today). Shows data it is given; AppShell connects it to
+/// DoseProvider and MedicationProvider. It holds no shared state itself.
 class PatientHomeScreen extends StatelessWidget {
   const PatientHomeScreen({
     required this.medications,
     required this.doseRecords,
     this.displayName = 'Demo Patient',
     this.doseTrackingAvailable = true,
+    this.progress,
+    this.isLoadingDoses = false,
+    this.doseError,
+    this.onRetryDoses,
+    this.onTaken,
+    this.isPending,
+    this.isConfirming = false,
+    this.reviewCount = 0,
+    this.onReview,
     this.onMedicationTap,
     this.onRefills,
     super.key,
   });
 
   final List<Medication> medications;
+
+  /// Today's doses, already sorted by time.
   final List<DoseRecord> doseRecords;
   final String displayName;
   final bool doseTrackingAvailable;
+
+  /// From DoseProvider (applies the policy). Null: count [doseRecords].
+  final DoseProgress? progress;
+  final bool isLoadingDoses;
+  final String? doseError;
+  final VoidCallback? onRetryDoses;
+
+  /// Called when "Mark as Taken" is tapped. Null disables the button.
+  final ValueChanged<DoseRecord>? onTaken;
+
+  /// True while that dose is being saved (button shows a spinner).
+  final bool Function(String doseId)? isPending;
+
+  /// True while ANY dose is saving: all Taken buttons are disabled.
+  final bool isConfirming;
+
+  /// Overdue/missed doses today, for the "needs your review" banner.
+  final int reviewCount;
+  final VoidCallback? onReview;
   final ValueChanged<String>? onMedicationTap;
   final VoidCallback? onRefills;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
+    final shownProgress =
+        progress ??
+        DoseProgress(
+          taken: doseRecords.where((r) => r.status == DoseStatus.taken).length,
+          total: doseRecords.length,
+        );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Today'),
@@ -50,64 +91,63 @@ class PatientHomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            'Hello, $displayName',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          Text('Hello, $displayName', style: theme.headlineSmall),
           const SizedBox(height: 4),
           Text(
             'Keep your medication record up to date.',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: theme.bodyMedium,
           ),
           const SizedBox(height: 20),
-          if (doseTrackingAvailable)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 64,
-                      height: 64,
-                      child: CircularProgressIndicator(
-                        value: _adherenceValue,
-                        strokeWidth: 8,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Today\'s adherence'),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${doseRecords.where((r) => r.status == DoseStatus.taken).length} of '
-                            '${doseRecords.length} doses confirmed',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+          if (doseTrackingAvailable) ...[
+            DoseProgressCard(progress: shownProgress),
+            const SizedBox(height: 20),
+            Text("Today's medications", style: theme.titleLarge),
+            const SizedBox(height: 8),
+            if (isLoadingDoses && doseRecords.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (doseError != null)
+              MessageCard(
+                warning: true,
+                message: doseError!,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: onRetryDoses,
+                    child: const Text('Retry'),
+                  ),
                 ),
+              )
+            else if (doseRecords.isEmpty)
+              const MessageCard(message: 'No doses scheduled today.'),
+            ...doseRecords.map(
+              (record) => _DoseCard(
+                record: record,
+                pending: isPending?.call(record.id) ?? false,
+                enabled: !isConfirming,
+                onTaken: onTaken == null ? null : () => onTaken!(record),
               ),
             ),
-          const SizedBox(height: 20),
-          Text('Dose schedule', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          ...doseRecords.map((record) => _DoseCard(record: record)),
-          if (!doseTrackingAvailable)
+            if (reviewCount > 0)
+              InkWell(
+                onTap: onReview,
+                child: MessageCard(
+                  warning: true,
+                  message: reviewCount == 1
+                      ? '1 unconfirmed dose needs your review'
+                      : '$reviewCount unconfirmed doses need your review',
+                ),
+              ),
+          ] else
             const MessageCard(
               message:
                   'Dose confirmation and history are not connected yet. '
                   'Your saved medication plan is shown below.',
             ),
           const SizedBox(height: 16),
-          Text(
-            'Medication plan',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('Medication plan', style: theme.titleLarge),
           const SizedBox(height: 8),
           if (medications.isEmpty)
             const Text(
@@ -136,90 +176,80 @@ class PatientHomeScreen extends StatelessWidget {
       ),
     );
   }
-
-  double get _adherenceValue {
-    if (doseRecords.isEmpty) return 0;
-    final taken = doseRecords
-        .where((record) => record.status == DoseStatus.taken)
-        .length;
-    return taken / doseRecords.length;
-  }
 }
 
+/// One dose: name, "1 tablet • 8:00 AM", status chip, Mark as Taken.
 class _DoseCard extends StatelessWidget {
-  const _DoseCard({required this.record});
+  const _DoseCard({
+    required this.record,
+    required this.pending,
+    this.enabled = true,
+    this.onTaken,
+  });
 
   final DoseRecord record;
+  final bool pending;
+  final bool enabled;
+  final VoidCallback? onTaken;
 
   @override
   Widget build(BuildContext context) {
-    final isTaken = record.status == DoseStatus.taken;
-    final statusColor = switch (record.status) {
-      DoseStatus.taken => Colors.green,
-      DoseStatus.overdue || DoseStatus.missed => Colors.red,
-      DoseStatus.scheduled => Colors.indigo,
-    };
+    // Taken is final; missed can no longer be confirmed (team decision).
+    final canConfirm =
+        record.status == DoseStatus.scheduled ||
+        record.status == DoseStatus.overdue;
+    final amount = doseAmountLabel(record);
+    final time = doseTimeLabel(context, record.scheduledTime);
 
     return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListTile(
-            leading: CircleAvatar(
-              child: Icon(isTaken ? Icons.check : Icons.medication_outlined),
-            ),
-            title: Text(record.medicationName),
-            subtitle: Text(_timeLabel(record.scheduledTime)),
-          ),
-          // Actions have their own growing area instead of ListTile.trailing's
-          // fixed height. Wrap preserves text scaling on narrow screens.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Wrap(
-              alignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                StatusChip(
-                  label: _statusLabel(record.status),
-                  color: statusColor,
-                ),
-                if (!isTaken)
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(64, 48),
-                    ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${record.medicationName} marked taken',
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('Taken'),
+                const Icon(Icons.medication_outlined, size: 32),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.medicationName,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(amount.isEmpty ? time : '$amount • $time'),
+                    ],
                   ),
+                ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            DoseStatusChip(status: record.status),
+            if (canConfirm) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                  ),
+                  // Disabled while saving, so a second tap does nothing.
+                  onPressed: pending || !enabled ? null : onTaken,
+                  icon: pending
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check_circle_outline),
+                  label: Text(pending ? 'Saving…' : 'Mark as Taken'),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
-  }
-
-  String _statusLabel(DoseStatus status) {
-    return switch (status) {
-      DoseStatus.taken => 'Taken',
-      DoseStatus.scheduled => 'Scheduled',
-      DoseStatus.overdue => 'Overdue',
-      DoseStatus.missed => 'Missed',
-    };
-  }
-
-  String _timeLabel(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return 'Scheduled at $hour:$minute';
   }
 }

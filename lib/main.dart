@@ -14,6 +14,9 @@ import 'state/doctor_link_provider.dart';
 import 'state/medication_provider.dart';
 import 'services/medication_repository.dart';
 import 'services/firestore_medication_store.dart';
+import 'services/dose_repository.dart';
+import 'services/firestore_dose_store.dart';
+import 'state/dose_provider.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -58,6 +61,35 @@ Future<void> main() async {
           ),
           update: (_, auth, medications) =>
               medications!..updateSession(auth.isPatient ? auth.userId : null),
+        ),
+        // Person 1: dose state follows the signed-in patient and their
+        // active medications. Must come after MedicationProvider.
+        ChangeNotifierProxyProvider2<
+          AuthProvider,
+          MedicationProvider,
+          DoseProvider
+        >(
+          create: (context) => DoseProvider(
+            StoredDoseRepository(
+              FirestoreDoseStore(FirebaseFirestore.instance),
+              currentPatientId: () {
+                final auth = context.read<AuthProvider>();
+                return auth.isPatient ? auth.userId : null;
+              },
+            ),
+            // Same dose ID on every retry, so stock is deducted once.
+            consumeStock:
+                ({required medicationId, required doseRecordId}) async =>
+                    (await context.read<MedicationProvider>().consumeStock(
+                      medicationId: medicationId,
+                      doseRecordId: doseRecordId,
+                    )).status,
+          ),
+          update: (_, auth, medications, doses) => doses!
+            ..updateSession(
+              patientId: auth.isPatient ? auth.userId : null,
+              medications: medications.activeMedications,
+            ),
         ),
       ],
       child: const MedicationFollowUpApp(),
