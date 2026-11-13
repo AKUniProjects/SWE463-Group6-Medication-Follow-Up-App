@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medication_follow_up_app/screens/medications_screen.dart';
+import 'package:medication_follow_up_app/screens/patient_home_screen.dart';
 import 'package:medication_follow_up_app/services/medication_repository.dart';
 import 'package:medication_follow_up_app/state/auth_provider.dart';
+import 'package:medication_follow_up_app/widgets/medication_widgets.dart';
 
 import 'support/app_providers.dart';
 import 'support/controllable_auth_repository.dart';
@@ -30,8 +32,23 @@ void main() {
       await tester.pumpAndSettle();
       await repository.create(medicationDraft());
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Fictional vitamin'));
-      await tester.tap(find.text('Fictional vitamin'));
+      // Today also shows the name on its dose card (Person 1), so tap the
+      // name inside the Medication plan card.
+      final planCard = find.descendant(
+        of: find.byType(MedicationCard),
+        matching: find.text('Fictional vitamin'),
+      );
+      await tester.scrollUntilVisible(
+        planCard,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(PatientHomeScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.tap(planCard);
       await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const Key('medication-name')),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,10 @@ import 'state/doctor_link_provider.dart';
 import 'state/medication_provider.dart';
 import 'services/medication_repository.dart';
 import 'services/firestore_medication_store.dart';
+import 'services/dose_repository.dart';
+import 'services/firestore_dose_store.dart';
+import 'services/notification_service.dart';
+import 'state/dose_provider.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -27,6 +33,16 @@ Future<void> main() async {
     await connectToFirebaseEmulators();
   }
 
+  // Person 1 (#3): Android reminders. One instance, shared by
+  // MedicationProvider (schedules) and the notification screens (status).
+  final notifications = NotificationService(
+    LocalNotificationsPlugin(),
+    supported: !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
+  );
+  // Not awaited: the app starts while the plugin loads; reminder calls
+  // wait for it themselves.
+  unawaited(notifications.start());
+
   // Provide shared authentication state to the application.
   runApp(
     MultiProvider(
@@ -35,6 +51,7 @@ Future<void> main() async {
           lazy: false,
           create: (_) => AuthProvider(FirebaseAuthRepository())..start(),
         ),
+        ChangeNotifierProvider<NotificationService>.value(value: notifications),
         // Doctor-code state follows the signed-in user: it is cleared on
         // sign-out or account switch. Only verified-profile doctors may act.
         ChangeNotifierProxyProvider<AuthProvider, DoctorLinkProvider>(
@@ -55,9 +72,41 @@ Future<void> main() async {
                 return auth.isPatient ? auth.userId : null;
               },
             ),
+            reminders: notifications,
           ),
           update: (_, auth, medications) =>
               medications!..updateSession(auth.isPatient ? auth.userId : null),
+        ),
+        // Person 1: dose state follows the signed-in patient and their
+        // active medications. Must come after MedicationProvider.
+        ChangeNotifierProxyProvider2<
+          AuthProvider,
+          MedicationProvider,
+          DoseProvider
+        >(
+          create: (context) => DoseProvider(
+            StoredDoseRepository(
+              FirestoreDoseStore(FirebaseFirestore.instance),
+              currentPatientId: () {
+                final auth = context.read<AuthProvider>();
+                return auth.isPatient ? auth.userId : null;
+              },
+            ),
+            // Same dose ID on every retry, so stock is deducted once.
+            consumeStock:
+                ({required medicationId, required doseRecordId}) async =>
+                    (await context.read<MedicationProvider>().consumeStock(
+                      medicationId: medicationId,
+                      doseRecordId: doseRecordId,
+                    )).status,
+            // #6: follow-up reminders for unconfirmed doses.
+            followUps: notifications,
+          ),
+          update: (_, auth, medications, doses) => doses!
+            ..updateSession(
+              patientId: auth.isPatient ? auth.userId : null,
+              medications: medications.activeMedications,
+            ),
         ),
       ],
       child: const MedicationFollowUpApp(),

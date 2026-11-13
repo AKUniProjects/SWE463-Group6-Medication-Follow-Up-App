@@ -283,7 +283,63 @@ service cloud.firestore {
       }
     }
 
-    // Everything else (dose records, ...) stays closed until
+    // Person 1: doseRecords/{medicationId}_{yyyyMMdd}_{HHmm}
+    // { patientId, medicationId, medicationName, scheduledTime, status,
+    //   confirmedAt, doseAmount, doseUnit }
+    // Only changed doses are saved ("scheduled" is never stored).
+    // taken and missed are final; overdue may become taken or missed.
+    match /doseRecords/{doseId} {
+      function validDose(d) {
+        return d.keys().hasOnly(['patientId', 'medicationId', 'medicationName',
+            'scheduledTime', 'status', 'confirmedAt', 'doseAmount', 'doseUnit'])
+          && d.keys().hasAll(['patientId', 'medicationId', 'medicationName',
+            'scheduledTime', 'status', 'confirmedAt', 'doseAmount', 'doseUnit'])
+          && d.patientId is string
+          && d.medicationId is string
+          // The ID must belong to this medication (one record per dose).
+          && doseId.matches('^[A-Za-z0-9]+_[0-9]{8}_[0-9]{4}$')
+          && doseId.split('_')[0] == d.medicationId
+          && d.medicationName is string
+          && d.medicationName.size() > 0 && d.medicationName.size() <= 100
+          && d.scheduledTime is timestamp
+          && d.status in ['taken', 'overdue', 'missed']
+          && (d.doseAmount == null || (d.doseAmount is number && d.doseAmount > 0))
+          && (d.doseUnit == null || d.doseUnit is string)
+          // taken: real tap time (device clock within 10 minutes of the
+          // server). overdue/missed: no tap time, and only once the
+          // scheduled time has passed.
+          && ((d.status == 'taken'
+                && d.confirmedAt is timestamp
+                && d.confirmedAt > request.time - duration.value(10, 'm')
+                && d.confirmedAt < request.time + duration.value(10, 'm'))
+              || (d.status != 'taken'
+                && d.confirmedAt == null
+                && d.scheduledTime < request.time));
+      }
+
+      // Same access as medications: the patient, or a doctor with an active
+      // link (read-only). A transaction first reads a dose that may not
+      // exist yet, so patients may "get" an absent document.
+      allow get: if (resource == null && signedIn() && profile(me()).role == 'patient')
+        || (resource != null && canReadMedication(resource.data.patientId));
+      // Queries must include patientId equality. Rules are not filters.
+      allow list: if canReadMedication(resource.data.patientId);
+
+      allow create: if isPatientOwner(request.resource.data.patientId)
+        && validDose(request.resource.data)
+        && get(/databases/$(database)/documents/medications/$(request.resource.data.medicationId)).data.patientId == me();
+
+      allow update: if isPatientOwner(resource.data.patientId)
+        && resource.data.status == 'overdue'
+        && request.resource.data.status in ['taken', 'missed']
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'confirmedAt'])
+        && validDose(request.resource.data);
+
+      allow delete: if false;
+    }
+
+    // Everything else stays closed until
     // each feature defines its own rules.
     match /{document=**} {
       allow read, write: if false;

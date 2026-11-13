@@ -1,8 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/dose_record.dart';
+import '../models/medication.dart';
 import '../models/user_profile.dart';
+import '../services/notification_service.dart';
+import '../widgets/notifications_overlay.dart';
 import '../state/auth_provider.dart';
+import '../state/dose_provider.dart';
+import 'dose_confirmed_screen.dart';
+import 'dose_history_screen.dart';
+import 'missed_dose_screen.dart';
 import '../state/medication_provider.dart';
 import '../widgets/auth_form_widgets.dart';
 import 'doctor_code_dialog.dart';
@@ -22,8 +32,100 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _selectedIndex = 0;
+  StreamSubscription<ReminderPayload?>? _reminderTaps;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (widget.role == UserRole.patient) {
+      // Optional: null in tests that do not provide notifications.
+      final notifications = context.read<NotificationService?>();
+      // Ask "Allow notifications?" when the patient's app opens (Android
+      // shows the prompt only while the choice is still open).
+      unawaited(notifications?.requestPermission());
+      // A tapped reminder opens Today (decision 10); a tapped follow-up
+      // opens the Missed Follow-up page (#6).
+      _reminderTaps = notifications?.taps.listen(_openFromNotification);
+      // A tap while the app was closed starts the app instead, and Android
+      // keeps it as "launch details": handle that tap the same way.
+      unawaited(
+        notifications?.takeLaunchTap().then((payload) {
+          if (payload != null) _openFromNotification(payload);
+        }),
+      );
+    }
+  }
+
+  void _openFromNotification(ReminderPayload? payload) {
+    _openToday();
+    if (mounted && payload?.kind == ReminderKind.followUp) {
+      _openMissedFollowUp();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_reminderTaps?.cancel());
+    super.dispose();
+  }
+
+  /// Closes any page on top and shows the Today tab.
+  void _openToday() {
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    setState(() => _selectedIndex = 0);
+  }
+
+  /// Missed Follow-up page (#6) on top of the current tab.
+  void _openMissedFollowUp() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => MissedDoseScreen(
+          onOpenToday: () => setState(() => _selectedIndex = 0),
+          onOpenHistory: () => setState(() => _selectedIndex = 2),
+        ),
+      ),
+    );
+  }
+
+  /// Re-check overdue/missed when the patient returns to the app.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && widget.role == UserRole.patient) {
+      context.read<DoseProvider>().evaluateStatuses();
+    }
+  }
+
+  /// Mark as Taken: save first, then show 04b only if the save worked.
+  Future<void> _confirmDose(DoseRecord dose) async {
+    final doses = context.read<DoseProvider>();
+    final confirmation = await doses.confirm(dose);
+    if (!mounted) return;
+    if (confirmation == null) {
+      // Null without an error means a second tap while saving: ignore.
+      final error = doses.confirmError;
+      if (error == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () => _confirmDose(dose),
+          ),
+        ),
+      );
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => DoseConfirmedScreen(confirmation: confirmation),
+      ),
+    );
+  }
 
   Future<void> _editMedication(String id) async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -59,28 +161,61 @@ class _AppShellState extends State<AppShell> {
             selectedIcon: Icon(Icons.medication),
             label: 'Medications',
           ),
+          // Person 1: patient Dose History (Phase 2 frame 07).
+          NavigationDestination(
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history),
+            label: 'History',
+          ),
         ];
 
   @override
   Widget build(BuildContext context) {
-    final pages = widget.role == UserRole.doctor
+    final doses = widget.role == UserRole.patient
+        ? context.watch<DoseProvider>()
+        : null;
+    final medications = widget.role == UserRole.patient
+        ? context.watch<MedicationProvider>().activeMedications
+        : const <Medication>[];
+    void openRefills() => Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),
+    );
+    final pages = doses == null
         ? [const LinkedPatientsDashboard()]
         : [
             PatientHomeScreen(
-              medications: context
-                  .watch<MedicationProvider>()
-                  .activeMedications,
-              doseRecords: const [],
+              medications: medications,
+              doseRecords: doses.todayDoses,
               displayName:
                   context.watch<AuthProvider>().userProfile?.displayName ??
                   'Patient',
-              doseTrackingAvailable: false,
+              progress: doses.progress,
+              isLoadingDoses: doses.isLoading,
+              doseError: doses.errorMessage,
+              onRetryDoses: doses.retry,
+              onTaken: _confirmDose,
+              isPending: doses.isPending,
+              isConfirming: doses.isConfirming,
+              reviewCount: doses.needsReview.length,
+              onReview: _openMissedFollowUp,
               onMedicationTap: _editMedication,
-              onRefills: () => Navigator.of(context).push<void>(
-                MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),
+              onRefills: openRefills,
+              // Feature #3: the bell and its badge use live state only.
+              onNotifications: () => showNotificationsOverlay(
+                context,
+                onOpenToday: () => setState(() => _selectedIndex = 0),
+                onOpenHistory: () => setState(() => _selectedIndex = 2),
+                onRefills: openRefills,
               ),
+              notificationCount:
+                  doses.dueNow.length +
+                  doses.needsFollowUp.length +
+                  lowStockMedications(medications).length,
             ),
             const MedicationsScreen(),
+            DoseHistoryScreen(
+              onBackToToday: () => setState(() => _selectedIndex = 0),
+            ),
           ];
     final error = context.watch<AuthProvider>().actionErrorMessage;
     return Scaffold(
