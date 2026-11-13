@@ -16,11 +16,11 @@ Phase 3 Flutter prototype for Android and Chrome, using fictional medical data.
 
 ## Known unfinished Phase 3 work
 
-Patient navigation currently contains Today and Medications, plus a Sign out action. The approved patient destinations are Today, Meds, History, and Insights; History and Insights are not integrated yet. Doctors have a separate dashboard and linking-code action.
+Patient navigation contains Today, Medications and History, plus a Sign out action. The approved Insights destination is not integrated yet. Doctors have a separate dashboard and linking-code action.
 
-Person 2's medication CRUD and supply tracking now use authenticated patient-scoped Firestore data through Provider/ChangeNotifier. Today displays the same saved medication plan and stock; it no longer presents sample doses or hardcoded refill warnings in the authenticated flow. Dose confirmation/history, device reminders, missed-dose follow-up, and real adherence statistics remain teammate-owned work. The existing dose-card constructor remains available to Person 1; its demo Taken feedback is not a connected confirmation service.
+Person 2's medication CRUD and supply tracking now use authenticated patient-scoped Firestore data through Provider/ChangeNotifier. Today displays the same saved medication plan and stock; it no longer presents sample doses or hardcoded refill warnings in the authenticated flow. Dose confirmation/history, Android reminders and missed-dose follow-up are connected (see Person 1 below). Real adherence statistics remain teammate-owned work.
 
-The doctor adapter passes real Firebase patient UIDs, but statistics are empty until dose integration. Zero records currently display as 0% adherence; this does not indicate measured nonadherence. Doctor-side revocation UI and real patient-history content remain pending.
+The doctor adapter passes real Firebase patient UIDs, but statistics stay empty until the statistics owner reads doseRecords for linked patients. Zero records currently display as 0% adherence; this does not indicate measured nonadherence. Doctor-side revocation UI and real patient-history content remain pending.
 
 ## Shared architecture and contracts
 
@@ -30,7 +30,21 @@ The doctor adapter passes real Firebase patient UIDs, but statistics are empty u
 - doctorLinks/{patientId}_{doctorId} is the authoritative relationship. UserProfile.linkedDoctorIds stays empty and never authorizes reads.
 - New repositories/providers must use Firebase UIDs, clear session state, and reject stale results.
 - Coordinate changes to main.dart, app_shell.dart, auth_gate.dart, shared models, firestore.rules, pubspec.yaml/lock, and this README.
-- Medication serialization, stock units, stable dose IDs and reminder hooks are documented in [Person 2's handoff](docs/PERSON2_HANDOFF.md). Person 1 still needs to connect dose confirmation, schedule reconciliation and Android notification delivery.
+- Medication serialization, stock units, stable dose IDs and reminder hooks are documented in [Person 2's handoff](docs/PERSON2_HANDOFF.md). Person 1's dose confirmation, reminders and follow-ups are documented in [Person 1's handoff](docs/PERSON1_HANDOFF.md).
+
+### Person 1 — Doses, Reminders and Missed-Dose Follow-up
+
+| Essential feature | Current status | Evidence |
+|---|---|---|
+| #4 Dose Confirmation & History | Implemented | Mark as Taken on Today, Dose Confirmed page, overdue/missed statuses, History tab (Week/Month), `doseRecords` Firestore rules and rule tests |
+| #3 Medication Reminders | Implemented for Android | Daily dose reminders and low-stock refill reminders, permission prompt and denied state, bell overlay, Due Reminder page; checked on an Android emulator (API 37) |
+| #6 Missed-Dose Follow-up | Implemented for Android | One follow-up notification 30 minutes after an unconfirmed dose, even with the app closed; cancelled on confirmation; Missed Follow-up page; checked on an Android emulator |
+
+A dose becomes **Overdue** 30 minutes after its scheduled time (it can still be marked as taken) and **Missed** after 4 hours, or earlier when the next dose of the same medicine is due. Missed and Taken are final. These are team-agreed app rules, not medical advice; they live in `lib/services/dose_policy.dart`.
+
+Dose IDs are `{medicationId}_{yyyyMMdd}_{HHmm}`, so one dose has one record and stock is deducted once. Notifications use flutter_local_notifications (BSD-3-Clause), timezone (BSD-2-Clause) and flutter_timezone (Apache-2.0). Android permissions: notifications, optional exact alarms, and restoring reminders after a restart. Notifications are Android only; on Chrome the dose features still work without them.
+
+See the [handoff](docs/PERSON1_HANDOFF.md) for the demonstration steps, tests and known limitations.
 
 ### Person 2 — Medication Management and Refills
 
@@ -144,7 +158,7 @@ Rule tests use Node's built-in runner and the local emulator REST API; they need
 If port 8080 is free, the documented temporary-emulator command is:
 
 ~~~powershell
-npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs firestore_rules_test/medication_rules.test.mjs"
+npx -y firebase-tools@15.35.0 emulators:exec --only firestore --project demo-medfollow "node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs firestore_rules_test/medication_rules.test.mjs firestore_rules_test/dose_rules.test.mjs"
 ~~~
 
 An installed CLI can replace the npx prefix with firebase. Do not download tools unnecessarily.
@@ -154,7 +168,7 @@ If this repository's emulator is already running with the current firestore.rule
 ~~~powershell
 $env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
 $env:GCLOUD_PROJECT = 'demo-medfollow'
-node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs firestore_rules_test/medication_rules.test.mjs
+node --test --test-concurrency=1 firestore_rules_test/users_rules.test.mjs firestore_rules_test/doctor_linking_rules.test.mjs firestore_rules_test/medication_rules.test.mjs firestore_rules_test/dose_rules.test.mjs
 ~~~
 
 First check the process/project/rules path. Do not kill unrelated processes. The tests reset demo-medfollow data; do not point GCLOUD_PROJECT at an emulator dataset you want to keep. With singleProjectMode enabled, the separate demo namespace may produce a project-ID warning; it still stays entirely local.
@@ -167,8 +181,9 @@ First check the process/project/rules path. Do not kill unrelated processes. The
 4. Doctor refreshes their dashboard, including with zero/one patient, then opens patient details.
 5. Check Back, sign-out, and account switching. No old patient details or dialogs should remain.
 6. Revoke from the patient, refresh the doctor dashboard, and confirm the patient disappears.
-7. Add a medication with two daily times; confirm Today and Medications show the same record. Edit, update supply to zero, reload, then test Keep/Confirm deletion. Dose confirmation remains unfinished.
+7. Add a medication with two daily times; confirm Today and Medications show the same record. Edit, update supply to zero, reload, then test Keep/Confirm deletion.
 8. An unknown named route while signed out must show Login.
+9. Mark a dose as taken on Today; check Dose Confirmed, the Taken chip and History (Week/Month). On Android, check a reminder and a follow-up notification (see [Person 1's handoff](docs/PERSON1_HANDOFF.md)).
 
 ## Security boundaries
 
@@ -244,5 +259,7 @@ Not all contributions are stored in GitHub. The final Phase 2 PDF includes the c
 AI assistance was used to draft portions of the Flutter starter structure, sample data models, and technical documentation, and to support design inspiration, content revision, and language polishing.
 
 The team reviewed and adapted AI-assisted material, remains responsible for the final work, and can explain the submitted design and implementation decisions.
+
+For Person 1's Phase 3 contribution (Features #3, #4 and #6), Claude Code (Anthropic) was used as an AI assistant to plan the work, generate implementation code and tests, debug problems found during emulator testing, and draft this documentation. Person 1 reviewed the changes, ran the tests and the emulator checks, took the screenshots, and can explain the submitted code and design decisions.
 
 For Person 2's Phase 3 contribution, Codex generated substantial implementation, tests, documentation and local verification assistance. This is an AI-assisted review draft; student/team review and the ability to explain it are still required before submission. The earlier Phase 2 disclosure does not establish that the team has already reviewed these changes. See the handoff for a code walkthrough and actual evidence.
