@@ -67,6 +67,27 @@ Today's progress counts all of today's doses ("2 of 9"). Overdue doses do not co
 
 To test without waiting 30 minutes, temporarily set `overdueAfter` to 2 minutes in `dose_policy.dart`, and undo it afterwards with `git restore lib/services/dose_policy.dart`. Four automated tests fail while it is changed.
 
+## Evidence
+
+Genuine screenshots from 2026-11-14 are in [person1-evidence/](person1-evidence/). Android screenshots come from an emulator (Medium Phone, API 37) with the 2-minute testing setting above; History was captured in Chrome. All data is fictional seed data.
+
+| File | Shows |
+|---|---|
+| 01-today-before-confirming | Today with overdue doses and Mark as Taken |
+| 02-dose-confirmed | Dose Confirmed (progress 3 of 9). Taken while notifications were turned off, so it also shows that dose tracking works without notifications. The stock warning is expected: this seed medicine has no units per dose |
+| 03-today-after-confirming | Doses shown as Taken. Test C was confirmed before its time, which is used for the #6 check below |
+| 04-history-week / 05-history-month | History with Taken, Overdue and Missed doses |
+| 06-permission-prompt | Android 13+ "Allow notifications?" prompt on first open |
+| 07-permission-granted-exact-timing | Notifications on, exact timing, number of scheduled reminders |
+| 08-dose-reminder-notification | A dose reminder delivered at its time |
+| 09-bell-overlay | Bell overlay with Medication due, Missed follow-up and Refill reminder rows |
+| 10-due-reminder-screen | Due Reminder page opened from the bell |
+| 11-permission-denied / 12-permission-restored | Denied state with "Open Android settings", then turned back on |
+| 13-reminder-then-follow-up | The follow-up for "test" (01:15) arriving 2 minutes later, next to the next dose's reminder |
+| 14-missed-follow-up-screen | Missed Follow-up page listing unconfirmed doses |
+| 15-before-confirm-24-scheduled / 16-after-confirm-23-scheduled | Confirming Test C before it was late removed its follow-up (24 → 23 scheduled) |
+| 17-no-follow-up-after-confirm | At 01:39, after Test C's follow-up time (01:37), no follow-up was shown |
+
 ## Tests
 
 - Flutter: `test/dose_*_test.dart`, `test/notification_service_test.dart`, `test/notifications_ui_test.dart`, `test/dose_follow_up_test.dart`, `test/missed_follow_up_ui_test.dart`. Fakes: `test/support/memory_dose_store.dart`, `test/support/fake_notification_plugin.dart`.

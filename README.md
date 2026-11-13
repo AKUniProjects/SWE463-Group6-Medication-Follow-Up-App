@@ -44,7 +44,7 @@ A dose becomes **Overdue** 30 minutes after its scheduled time (it can still be 
 
 Dose IDs are `{medicationId}_{yyyyMMdd}_{HHmm}`, so one dose has one record and stock is deducted once. Notifications use flutter_local_notifications (BSD-3-Clause), timezone (BSD-2-Clause) and flutter_timezone (Apache-2.0). Android permissions: notifications, optional exact alarms, and restoring reminders after a restart. Notifications are Android only; on Chrome the dose features still work without them.
 
-See the [handoff](docs/PERSON1_HANDOFF.md) for the demonstration steps, tests and known limitations.
+See the [handoff](docs/PERSON1_HANDOFF.md) for the demonstration steps, tests and known limitations, and [person1-evidence/](docs/person1-evidence/) for the screenshots.
 
 ### Person 2 — Medication Management and Refills
 
