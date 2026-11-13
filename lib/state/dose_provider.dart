@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/dose_record.dart';
 import '../models/medication.dart';
+import '../services/dose_follow_ups.dart';
 import '../services/dose_policy.dart';
 import '../services/dose_repository.dart';
 import '../services/dose_schedule.dart';
@@ -62,6 +63,7 @@ class DoseProvider extends ChangeNotifier {
   DoseProvider(
     this.repository, {
     this.consumeStock,
+    this.followUps,
     DateTime Function()? now,
     this.policy = const DosePolicy(),
     this.tickInterval = const Duration(minutes: 1),
@@ -73,6 +75,10 @@ class DoseProvider extends ChangeNotifier {
 
   /// Null in tests that do not check stock.
   final ConsumeStock? consumeStock;
+
+  /// Feature #6 follow-up reminders (NotificationService). Null in tests
+  /// that do not check them, and on platforms without notifications.
+  final DoseFollowUpGateway? followUps;
   final DateTime Function() _now;
 
   /// How often statuses are re-checked while the app is open (null = never).
@@ -93,6 +99,7 @@ class DoseProvider extends ChangeNotifier {
   Timer? _ticker;
   final _pending = <String>{}; // dose IDs being confirmed
   final _stockRetry = <String, String>{}; // dose ID -> medication ID
+  String _followUpKey = ''; // dose IDs last sent to the follow-up gateway
 
   bool isLoading = false;
 
@@ -114,6 +121,14 @@ class DoseProvider extends ChangeNotifier {
   List<DoseRecord> get needsReview => [
     for (final dose in _today)
       if (dose.status == DoseStatus.overdue) dose,
+  ];
+
+  /// Today's overdue and missed doses: the Missed Follow-up page (#6) and
+  /// its row in the notifications overlay.
+  List<DoseRecord> get needsFollowUp => [
+    for (final dose in _today)
+      if (dose.status == DoseStatus.overdue || dose.status == DoseStatus.missed)
+        dose,
   ];
 
   /// Doses whose time has come but are not overdue yet ("Medication due"
@@ -172,6 +187,7 @@ class DoseProvider extends ChangeNotifier {
     scheduleMicrotask(() {
       if (!_current(session)) return;
       _notify();
+      _syncFollowUps(); // a new or edited medication changes the doses
       // A new or edited medication may have doses that are already late:
       // save their status now instead of waiting for the next minute.
       unawaited(evaluateStatuses());
@@ -192,6 +208,7 @@ class DoseProvider extends ChangeNotifier {
     _today = const [];
     _pending.clear();
     _stockRetry.clear();
+    _followUpKey = '';
     errorMessage = null;
     confirmError = null;
     isLoading = patientId != null;
@@ -228,6 +245,7 @@ class DoseProvider extends ChangeNotifier {
             errorMessage = null;
             _rebuildToday();
             _notify();
+            _syncFollowUps();
             unawaited(evaluateStatuses());
           },
           onError: (Object error) {
@@ -273,6 +291,12 @@ class DoseProvider extends ChangeNotifier {
         result.record,
       ];
       _rebuildToday();
+      // Taken: no follow-up for this dose any more (also removes one that
+      // Android already shows). Not awaited, and a failure is ignored.
+      unawaited(
+        followUps?.cancelFollowUp(result.record).catchError((Object _) {}),
+      );
+      _syncFollowUps();
       // Not awaited: 04b shows the stock result when it arrives.
       final warning = _deductStock(result.record, session);
       return DoseConfirmation(
@@ -408,6 +432,41 @@ class DoseProvider extends ChangeNotifier {
       for (final dose in _statusService.changes(merged, now)) dose.id: dose,
     };
     _today = [for (final dose in merged) current[dose.id] ?? dose];
+  }
+
+  /// Feature #6: one follow-up reminder for every dose of today and
+  /// tomorrow that is still unconfirmed and not overdue yet, due at the
+  /// moment it becomes overdue (`policy.overdueAfter`). Android shows it
+  /// even if the app is closed. Tomorrow is included so a day without
+  /// opening the app still gets follow-ups.
+  ///
+  /// The gateway is called only when the list of doses changed, so the
+  /// minute ticker and repeated evaluations never reschedule anything.
+  void _syncFollowUps() {
+    final gateway = followUps;
+    final uid = _patientId;
+    if (gateway == null || uid == null || isLoading) return;
+    final now = _now();
+    final tomorrow = scheduledDosesForDay(
+      patientId: uid,
+      medications: _medications,
+      day: _dayOffset(now, 1),
+    );
+    final wanted = [
+      for (final dose in [..._today, ...tomorrow])
+        if (dose.status == DoseStatus.scheduled &&
+            dose.scheduledTime.add(policy.overdueAfter).isAfter(now))
+          FollowUp(dose, dose.scheduledTime.add(policy.overdueAfter)),
+    ];
+    final key = [for (final f in wanted) f.dose.id].join('|');
+    if (key == _followUpKey) return;
+    _followUpKey = key;
+    unawaited(
+      gateway.syncFollowUps(uid, wanted).catchError((Object _) {
+        // Never blocks dose tracking; the next change tries again.
+        _followUpKey = '';
+      }),
+    );
   }
 
   void _startTicker() {

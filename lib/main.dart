@@ -99,6 +99,8 @@ Future<void> main() async {
                       medicationId: medicationId,
                       doseRecordId: doseRecordId,
                     )).status,
+            // #6: follow-up reminders for unconfirmed doses.
+            followUps: notifications,
           ),
           update: (_, auth, medications, doses) => doses!
             ..updateSession(

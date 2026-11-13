@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/medication.dart';
 import '../screens/medication_due_screen.dart';
+import '../screens/missed_dose_screen.dart';
 import '../screens/notification_settings_screen.dart';
 import '../state/dose_provider.dart';
 import '../state/medication_provider.dart';
@@ -21,6 +22,7 @@ List<Medication> lowStockMedications(List<Medication> medications) => [
 Future<void> showNotificationsOverlay(
   BuildContext context, {
   required VoidCallback onOpenToday,
+  required VoidCallback onOpenHistory,
   required VoidCallback onRefills,
 }) {
   // The shell's navigator: pages open on top of Today, not in the dialog.
@@ -35,6 +37,12 @@ Future<void> showNotificationsOverlay(
 
       return _NotificationsDialog(
         onDue: () => openPage(MedicationDueScreen(onOpenToday: onOpenToday)),
+        onMissed: () => openPage(
+          MissedDoseScreen(
+            onOpenToday: onOpenToday,
+            onOpenHistory: onOpenHistory,
+          ),
+        ),
         onRefill: () {
           Navigator.of(dialogContext).pop();
           onRefills();
@@ -48,17 +56,21 @@ Future<void> showNotificationsOverlay(
 class _NotificationsDialog extends StatelessWidget {
   const _NotificationsDialog({
     required this.onDue,
+    required this.onMissed,
     required this.onRefill,
     required this.onSettings,
   });
 
   final VoidCallback onDue;
+  final VoidCallback onMissed;
   final VoidCallback onRefill;
   final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
-    final due = context.watch<DoseProvider>().dueNow;
+    final doses = context.watch<DoseProvider>();
+    final due = doses.dueNow;
+    final lateDoses = doses.needsFollowUp;
     final lowStock = lowStockMedications(
       context.watch<MedicationProvider>().activeMedications,
     );
@@ -89,6 +101,17 @@ class _NotificationsDialog extends StatelessWidget {
                 background: AppColors.tint,
                 onTap: onDue,
               ),
+            if (lateDoses.isNotEmpty)
+              _Row(
+                title: 'Missed follow-up',
+                subtitle: [
+                  '${lateDoses.first.medicationName} • '
+                      '${doseTimeLabel(context, lateDoses.first.scheduledTime)}',
+                  if (lateDoses.length > 1) '+${lateDoses.length - 1} more',
+                ].join('  '),
+                background: AppColors.cream,
+                onTap: onMissed,
+              ),
             for (final m in lowStock)
               _Row(
                 title: 'Refill reminder',
@@ -98,7 +121,7 @@ class _NotificationsDialog extends StatelessWidget {
                 background: AppColors.mint,
                 onTap: onRefill,
               ),
-            if (due.isEmpty && lowStock.isEmpty)
+            if (due.isEmpty && lateDoses.isEmpty && lowStock.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(bottom: AppSpacing.small),
                 child: Text('No reminders right now.'),

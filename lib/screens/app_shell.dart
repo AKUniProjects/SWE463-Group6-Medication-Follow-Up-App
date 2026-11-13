@@ -12,6 +12,7 @@ import '../state/auth_provider.dart';
 import '../state/dose_provider.dart';
 import 'dose_confirmed_screen.dart';
 import 'dose_history_screen.dart';
+import 'missed_dose_screen.dart';
 import '../state/medication_provider.dart';
 import '../widgets/auth_form_widgets.dart';
 import 'doctor_code_dialog.dart';
@@ -45,8 +46,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       // Ask "Allow notifications?" when the patient's app opens (Android
       // shows the prompt only while the choice is still open).
       unawaited(notifications?.requestPermission());
-      // A tapped reminder opens Today (decision 10).
-      _reminderTaps = notifications?.taps.listen((_) => _openToday());
+      // A tapped reminder opens Today (decision 10); a tapped follow-up
+      // opens the Missed Follow-up page (#6).
+      _reminderTaps = notifications?.taps.listen((payload) {
+        _openToday();
+        if (mounted && payload?.kind == ReminderKind.followUp) {
+          _openMissedFollowUp();
+        }
+      });
     }
   }
 
@@ -62,6 +69,18 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (!mounted) return;
     Navigator.of(context).popUntil((route) => route.isFirst);
     setState(() => _selectedIndex = 0);
+  }
+
+  /// Missed Follow-up page (#6) on top of the current tab.
+  void _openMissedFollowUp() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => MissedDoseScreen(
+          onOpenToday: () => setState(() => _selectedIndex = 0),
+          onOpenHistory: () => setState(() => _selectedIndex = 2),
+        ),
+      ),
+    );
   }
 
   /// Re-check overdue/missed when the patient returns to the app.
@@ -169,16 +188,20 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               isPending: doses.isPending,
               isConfirming: doses.isConfirming,
               reviewCount: doses.needsReview.length,
+              onReview: _openMissedFollowUp,
               onMedicationTap: _editMedication,
               onRefills: openRefills,
               // Feature #3: the bell and its badge use live state only.
               onNotifications: () => showNotificationsOverlay(
                 context,
                 onOpenToday: () => setState(() => _selectedIndex = 0),
+                onOpenHistory: () => setState(() => _selectedIndex = 2),
                 onRefills: openRefills,
               ),
               notificationCount:
-                  doses.dueNow.length + lowStockMedications(medications).length,
+                  doses.dueNow.length +
+                  doses.needsFollowUp.length +
+                  lowStockMedications(medications).length,
             ),
             const MedicationsScreen(),
             DoseHistoryScreen(

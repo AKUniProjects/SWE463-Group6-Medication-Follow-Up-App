@@ -70,6 +70,7 @@ Widget appWithProviders(
                     medicationId: medicationId,
                     doseRecordId: doseRecordId,
                   )).status,
+          followUps: notifications,
         ),
         update: (_, a, medications, doses) => doses!
           ..updateSession(

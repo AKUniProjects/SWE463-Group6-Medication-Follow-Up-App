@@ -156,8 +156,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Notifications are on.'), findsOneWidget);
-    // 1 dose reminder + 1 refill reminder.
-    expect(find.textContaining('2 reminders are scheduled'), findsOneWidget);
+    // 1 daily dose reminder + 1 refill reminder + 2 follow-ups (#6) for
+    // the 08:00 dose today and tomorrow (each at 08:30).
+    expect(find.textContaining('4 reminders are scheduled'), findsOneWidget);
     expect(find.text('Allow exact timing'), findsOneWidget);
   });
 
@@ -166,7 +167,11 @@ void main() {
     await tester.tap(find.text('History'));
     await tester.pumpAndSettle();
 
-    plugin.tap(plugin.scheduled.values.first.payload);
+    plugin.tap(
+      plugin.scheduled.values
+          .firstWhere((r) => r.decoded.kind == ReminderKind.dose)
+          .payload,
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Hello, ${patient.displayName}'), findsOneWidget);

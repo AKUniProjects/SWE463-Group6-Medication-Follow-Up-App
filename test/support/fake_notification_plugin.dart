@@ -9,6 +9,7 @@ class FakeScheduled {
     required this.minute,
     required this.payload,
     required this.exact,
+    this.at,
   });
   final String title;
   final String body;
@@ -16,6 +17,9 @@ class FakeScheduled {
   final int minute;
   final String payload;
   final bool exact;
+
+  /// Set for one-time reminders (follow-ups); null for daily ones.
+  final DateTime? at;
 
   ReminderPayload get decoded => ReminderPayload.decode(payload)!;
 }
@@ -77,6 +81,30 @@ class FakeNotificationPlugin implements NotificationPlugin {
       minute: minute,
       payload: payload,
       exact: exact,
+    );
+  }
+
+  /// How many times scheduleOnce was called (checks "scheduled once").
+  int scheduleOnceCalls = 0;
+
+  @override
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime at,
+    required String payload,
+    required bool exact,
+  }) async {
+    scheduleOnceCalls++;
+    scheduled[id] = FakeScheduled(
+      title: title,
+      body: body,
+      hour: at.hour,
+      minute: at.minute,
+      payload: payload,
+      exact: exact,
+      at: at,
     );
   }
 

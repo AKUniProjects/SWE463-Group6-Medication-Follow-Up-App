@@ -7,7 +7,9 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../models/dose_record.dart';
 import '../models/medication.dart';
+import 'dose_follow_ups.dart';
 import 'dose_schedule.dart' show parseDoseTime;
 import 'medication_reminders.dart';
 
@@ -23,7 +25,8 @@ import 'medication_reminders.dart';
 /// Refill reminders repeat daily at this local time while stock is low.
 const refillReminderTime = '09:00';
 
-enum ReminderKind { dose, refill }
+/// `followUp` (#6): one-time reminder when a dose becomes overdue.
+enum ReminderKind { dose, refill, followUp }
 
 /// Android notification permission, as last checked.
 enum ReminderPermission { unknown, granted, denied, unsupported }
@@ -36,6 +39,7 @@ class ReminderPayload {
     required this.patientId,
     required this.medicationId,
     required this.time,
+    this.doseId,
   });
 
   final ReminderKind kind;
@@ -43,11 +47,15 @@ class ReminderPayload {
   final String medicationId;
   final String time; // "HH:mm"
 
+  /// Only for follow-ups: which single dose (date included) it is about.
+  final String? doseId;
+
   String encode() => jsonEncode({
     'kind': kind.name,
     'patientId': patientId,
     'medicationId': medicationId,
     'time': time,
+    if (doseId != null) 'doseId': doseId,
   });
 
   /// Null if [text] is not one of our payloads.
@@ -60,6 +68,7 @@ class ReminderPayload {
         patientId: map['patientId'] as String,
         medicationId: map['medicationId'] as String,
         time: map['time'] as String,
+        doseId: map['doseId'] as String?,
       );
     } catch (_) {
       return null;
@@ -94,6 +103,16 @@ abstract class NotificationPlugin {
     required String payload,
     required bool exact,
   });
+
+  /// Shows once at [at] (no repeat). Same [id] again replaces it.
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime at,
+    required String payload,
+    required bool exact,
+  });
   Future<List<PendingReminder>> pending();
   Future<void> cancel(int id);
 }
@@ -111,7 +130,7 @@ int notificationId(String key) {
 }
 
 class NotificationService extends ChangeNotifier
-    implements MedicationReminderGateway {
+    implements MedicationReminderGateway, DoseFollowUpGateway {
   NotificationService(this.plugin, {required this.supported})
     : permission = supported
           ? ReminderPermission.unknown
@@ -251,13 +270,71 @@ class NotificationService extends ChangeNotifier
     await _updateCount();
   }
 
+  /// A disabled or deleted medication also loses its follow-ups.
   @override
   Future<void> cancelMedication(String patientId, String medicationId) =>
-      _cancelFor(patientId, medicationId, ReminderKind.dose);
+      _cancelFor(patientId, medicationId, {
+        ReminderKind.dose,
+        ReminderKind.followUp,
+      });
 
   @override
   Future<void> cancelRefill(String patientId, String medicationId) =>
-      _cancelFor(patientId, medicationId, ReminderKind.refill);
+      _cancelFor(patientId, medicationId, {ReminderKind.refill});
+
+  @override
+  Future<void> syncFollowUps(String patientId, List<FollowUp> followUps) async {
+    if (!supported) return;
+    await _prepare(patientId);
+    final wanted = {for (final f in followUps) _followUpId(f.dose): f};
+    // Keep the ones Android already holds (so each is scheduled ONCE);
+    // cancel this patient's follow-ups that are no longer wanted.
+    final held = <int>{};
+    for (final reminder in await plugin.pending()) {
+      final p = ReminderPayload.decode(reminder.payload);
+      if (p == null ||
+          p.kind != ReminderKind.followUp ||
+          p.patientId != patientId) {
+        continue;
+      }
+      if (wanted.containsKey(reminder.id)) {
+        held.add(reminder.id);
+      } else {
+        await plugin.cancel(reminder.id);
+      }
+    }
+    for (final MapEntry(key: id, value: followUp) in wanted.entries) {
+      if (held.contains(id)) continue;
+      final dose = followUp.dose;
+      final time = _clock(dose.scheduledTime);
+      await plugin.scheduleOnce(
+        id: id,
+        title: 'Missed dose follow-up',
+        body:
+            '${dose.medicationName} ($time) has no recorded confirmation. '
+            'Open the app to review it.',
+        at: followUp.at,
+        payload: ReminderPayload(
+          kind: ReminderKind.followUp,
+          patientId: dose.patientId,
+          medicationId: dose.medicationId,
+          time: time,
+          doseId: dose.id,
+        ).encode(),
+        exact: exactAlarms,
+      );
+    }
+    await _updateCount();
+  }
+
+  /// `cancel` also removes a notification that is already in the tray.
+  @override
+  Future<void> cancelFollowUp(DoseRecord dose) async {
+    await start();
+    if (!supported) return;
+    await plugin.cancel(_followUpId(dose));
+    await _updateCount();
+  }
 
   /// Sign-out: remove every reminder of this patient from the phone.
   @override
@@ -272,13 +349,13 @@ class NotificationService extends ChangeNotifier
   Future<void> _cancelFor(
     String patientId,
     String medicationId,
-    ReminderKind kind,
+    Set<ReminderKind> kinds,
   ) async {
     await start();
     if (!supported) return;
     await _cancelWhere(
       (_, p) =>
-          p.kind == kind &&
+          kinds.contains(p.kind) &&
           p.patientId == patientId &&
           p.medicationId == medicationId,
     );
@@ -314,6 +391,16 @@ class NotificationService extends ChangeNotifier
   int _idFor(ReminderPayload p) => notificationId(
     '${p.kind.name}/${p.patientId}/${p.medicationId}/${p.time}',
   );
+
+  /// The dose ID already holds medication, date and time, so every dose
+  /// has its own follow-up ID.
+  int _followUpId(DoseRecord dose) =>
+      notificationId('followUp/${dose.patientId}/${dose.id}');
+
+  /// "08:00" (the same format as the medication's scheduled times).
+  static String _clock(DateTime time) =>
+      '${time.hour.toString().padLeft(2, '0')}:'
+      '${time.minute.toString().padLeft(2, '0')}';
 
   /// "1 tablet" or "2.5 ml".
   static String _amount(Medication m) {
@@ -436,6 +523,32 @@ class LocalNotificationsPlugin implements NotificationPlugin {
       // Repeat every day at the same time.
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
+    );
+  }
+
+  @override
+  Future<void> scheduleOnce({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime at,
+    required String payload,
+    required bool exact,
+  }) async {
+    final when = tz.TZDateTime.from(at, tz.local);
+    // The plugin rejects past dates; a late follow-up is simply skipped
+    // (the in-app Missed Follow-up page still shows the dose).
+    if (!when.isAfter(tz.TZDateTime.now(tz.local))) return;
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: when,
+      notificationDetails: _details,
+      androidScheduleMode: exact
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
+      payload: payload, // no matchDateTimeComponents: shown only once
     );
   }
 
