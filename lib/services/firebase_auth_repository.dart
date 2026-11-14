@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_profile.dart';
 import 'auth_repository.dart';
 
+import 'package:flutter/foundation.dart';
+
 /// Thin wrapper around Firebase Authentication (replaceable in tests).
 abstract class AuthGateway {
   Stream<String?> authStateChanges();
@@ -86,7 +88,16 @@ class FirebaseAuthGateway implements AuthGateway {
       );
       return _requireUid(result.user);
     } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        debugPrint('SIGNUP ERROR CODE: ${e.code}');
+        debugPrint('SIGNUP ERROR MESSAGE: ${e.message}');
+      }
       throw AuthException(mapFirebaseAuthCode(e.code));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('SIGNUP UNEXPECTED ERROR: $e');
+      }
+      rethrow;
     }
   }
 
@@ -129,10 +140,11 @@ class FirebaseAuthRepository implements AuthRepository {
     FirebaseFirestore? firestore,
     AuthGateway? authGateway,
     ProfileStore? profileStore,
-  })  : _auth =
-            authGateway ?? FirebaseAuthGateway(auth ?? FirebaseAuth.instance),
-        _profiles = profileStore ??
-            FirestoreProfileStore(firestore ?? FirebaseFirestore.instance);
+  }) : _auth =
+           authGateway ?? FirebaseAuthGateway(auth ?? FirebaseAuth.instance),
+       _profiles =
+           profileStore ??
+           FirestoreProfileStore(firestore ?? FirebaseFirestore.instance);
 
   final AuthGateway _auth;
   final ProfileStore _profiles;

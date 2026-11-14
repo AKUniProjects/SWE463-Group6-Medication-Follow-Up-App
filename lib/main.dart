@@ -22,6 +22,9 @@ import 'services/notification_service.dart';
 import 'state/dose_provider.dart';
 import 'theme/app_theme.dart';
 
+import 'services/doctor_records_repository.dart';
+import 'state/doctor_dashboard_provider.dart'; //added by person 4
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -51,6 +54,27 @@ Future<void> main() async {
           lazy: false,
           create: (_) => AuthProvider(FirebaseAuthRepository())..start(),
         ),
+
+        //doctore dashboard provider by person 4
+        ChangeNotifierProxyProvider<AuthProvider, DoctorDashboardProvider>(
+          create: (context) => DoctorDashboardProvider(
+            DoctorRecordsRepository(
+              firestore: FirebaseFirestore.instance,
+              currentDoctorId: () {
+                final auth = context.read<AuthProvider>();
+
+                return auth.isAuthenticated && auth.isDoctor
+                    ? auth.userId
+                    : null;
+              },
+            ),
+          ),
+          update: (_, auth, dashboard) => dashboard!
+            ..updateSession(
+              auth.isAuthenticated && auth.isDoctor ? auth.userId : null,
+            ),
+        ),
+
         ChangeNotifierProvider<NotificationService>.value(value: notifications),
         // Doctor-code state follows the signed-in user: it is cleared on
         // sign-out or account switch. Only verified-profile doctors may act.
