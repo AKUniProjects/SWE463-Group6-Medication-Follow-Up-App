@@ -134,7 +134,9 @@ void main() {
       );
       repo.emit(doctor.id);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Private patient A'));
+      await tester.ensureVisible(find.text('View patient'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('View patient'));
       await tester.pumpAndSettle();
       expect(find.byType(PatientDetailsScreen), findsOneWidget);
       final oldNavigator = tester.state<NavigatorState>(
@@ -215,7 +217,9 @@ void main() {
     );
     repo.emit(doctor.id);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Private patient A'));
+    await tester.ensureVisible(find.text('View patient'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('View patient'));
     await tester.pumpAndSettle();
     await tester.pageBack();
     await tester.pumpAndSettle();

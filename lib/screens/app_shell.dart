@@ -60,8 +60,17 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   }
 
   void _openFromNotification(ReminderPayload? payload) {
+    if (!mounted ||
+        payload == null ||
+        payload.patientId != context.read<AuthProvider>().userId) {
+      return;
+    }
     _openToday();
-    if (mounted && payload?.kind == ReminderKind.followUp) {
+    if (payload.kind == ReminderKind.refill) {
+      Navigator.of(context).push<void>(
+        MaterialPageRoute(builder: (_) => const RefillTrackingScreen()),
+      );
+    } else if (payload.kind == ReminderKind.followUp) {
       _openMissedFollowUp();
     }
   }

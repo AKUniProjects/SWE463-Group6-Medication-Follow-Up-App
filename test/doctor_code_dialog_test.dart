@@ -15,6 +15,9 @@ import 'package:medication_follow_up_app/state/auth_provider.dart';
 import 'support/controllable_auth_repository.dart';
 import 'support/memory_medication_store.dart';
 import 'support/memory_dose_store.dart';
+import 'support/fake_doctor_records_repository.dart';
+
+import 'package:medication_follow_up_app/state/doctor_dashboard_provider.dart';
 
 import 'package:medication_follow_up_app/services/dose_repository.dart';
 import 'package:medication_follow_up_app/state/dose_provider.dart';
@@ -297,6 +300,10 @@ void main() {
           providers: [
             ChangeNotifierProvider<DoctorLinkProvider>.value(value: links),
             ChangeNotifierProvider<AuthProvider>.value(value: auth),
+            ChangeNotifierProvider<DoctorDashboardProvider>(
+              create: (_) =>
+                  DoctorDashboardProvider(FakeDoctorRecordsRepository(repo)),
+            ),
             ChangeNotifierProvider<MedicationProvider>(
               create: (_) => MedicationProvider(
                 StoredMedicationRepository(
@@ -330,7 +337,7 @@ void main() {
       await tester.tap(find.text('Close'));
       await tester.pumpAndSettle();
       expect(find.byType(DoctorCodeDialog), findsNothing);
-      expect(find.text('Doctor dashboard'), findsOneWidget);
+      expect(find.text('Your patients at a glance'), findsOneWidget);
     });
 
     testWidgets('patient shell has no linking-code entry', (tester) async {

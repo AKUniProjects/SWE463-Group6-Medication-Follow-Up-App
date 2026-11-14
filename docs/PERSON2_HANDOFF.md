@@ -1,5 +1,7 @@
 # Person 2 Phase 3 handoff
 
+**Integration update — 14 November 2026:** Person 1's dose confirmation and Android notification service are now wired to the stock/reminder interfaces, alongside Person 4's dashboard. Feature #8's implementation is connected. Android refill delivery still needs a device recheck on the merged version. The original 11 November implementation/verification snapshot below is retained; its descriptions of an unavailable gateway and missing Person 1 implementation are superseded by [PHASE3_INTEGRATION.md](PHASE3_INTEGRATION.md).
+
 **Branch:** phase3/medications-refills. **Base:** origin/main at 390da1d, including Person 3's merged PRs #1–#3 and later fixes. The initial checkout was clean. No push, remote PR, merge, deployment or phase-3 tag is included.
 
 | Scope | Status |

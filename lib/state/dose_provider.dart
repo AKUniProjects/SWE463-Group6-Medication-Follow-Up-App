@@ -10,7 +10,7 @@ import '../services/dose_repository.dart';
 import '../services/dose_schedule.dart';
 import '../services/dose_status_service.dart';
 import '../services/medication_repository.dart'
-    show ConsumptionStatus, MedicationException;
+    show ConsumptionStatus, MedicationException, MedicationError;
 
 /// Person 2's stock deduction (`MedicationProvider.consumeStock`), passed in
 /// so this provider does not depend on the whole MedicationProvider.
@@ -366,6 +366,7 @@ class DoseProvider extends ChangeNotifier {
         medicationId: record.medicationId,
         doseRecordId: record.id,
       );
+      if (!_current(session)) return null;
       _stockRetry.remove(record.id);
       return switch (status) {
         ConsumptionStatus.insufficientStock =>
@@ -375,6 +376,12 @@ class DoseProvider extends ChangeNotifier {
         ConsumptionStatus.consumed || ConsumptionStatus.alreadyConsumed => null,
       };
     } on MedicationException catch (error) {
+      if (!_current(session)) return null;
+      if (error.code == MedicationError.unavailable ||
+          error.code == MedicationError.conflict) {
+        _stockRetry[record.id] = record.medicationId;
+        return 'Dose saved. Stock will be updated when the connection returns.';
+      }
       return error.message; // for example the medication was deleted
     } catch (_) {
       if (!_current(session)) return null; // signed out meanwhile
@@ -392,8 +399,12 @@ class DoseProvider extends ChangeNotifier {
         // Same dose ID, so Person 2's receipt prevents a double deduction.
         await consume(medicationId: entry.value, doseRecordId: entry.key);
         _stockRetry.remove(entry.key);
-      } on MedicationException {
-        _stockRetry.remove(entry.key); // will never succeed
+      } on MedicationException catch (error) {
+        if (!_current(session)) return;
+        if (error.code != MedicationError.unavailable &&
+            error.code != MedicationError.conflict) {
+          _stockRetry.remove(entry.key); // permanent ownership/missing error
+        }
       } catch (_) {
         // Still offline: keep it for the next check.
       }

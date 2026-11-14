@@ -1,0 +1,332 @@
+00:00 +0: loading C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart
+00:00 +0: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: AuthProvider registration race: early auth event does not mark failure
+00:00 +1: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_provider_test.dart: User starts in loading state
+00:00 +2: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_provider_test.dart: User starts in loading state
+00:00 +3: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_provider_test.dart: User starts in loading state
+00:00 +4: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_provider_test.dart: User starts in loading state
+00:00 +5: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_provider_test.dart: User starts in loading state
+00:00 +6: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +7: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +8: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +9: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +10: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +11: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +12: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +13: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +14: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +15: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:00 +16: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +17: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +18: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +19: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +20: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +21: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +22: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +23: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +24: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +25: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +26: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +27: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +28: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +29: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +30: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +31: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +32: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +33: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +34: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +35: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +36: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +37: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +38: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +39: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +40: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +41: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +42: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +43: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +44: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +45: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +46: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +47: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +48: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +49: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +50: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +51: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +52: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +53: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +54: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +55: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +56: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +57: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +58: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +59: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +60: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +61: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +62: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +63: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:01 +64: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:02 +65: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:02 +66: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_flow_test.dart: Routing sign-out failure is visible and retry works, recovery=false
+00:02 +67: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +68: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +69: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +70: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +71: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +72: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +73: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +74: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +75: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +76: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +77: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +78: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +79: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +80: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +81: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +82: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +83: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +84: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +85: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +86: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +87: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +88: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +89: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +90: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +91: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +92: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +93: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +94: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +95: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +96: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +97: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +98: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +99: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +100: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +101: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +102: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +103: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +104: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +105: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +106: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:02 +107: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:03 +108: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:03 +109: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:03 +110: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:03 +111: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: changed code identity clears preview and requires new consent
+00:03 +112: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +113: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +114: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +115: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +116: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +117: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +118: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +119: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +120: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +121: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +122: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +123: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +124: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +125: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +126: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +127: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +128: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +129: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +130: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +131: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +132: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +133: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +134: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +135: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +136: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +137: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +138: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +139: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +140: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +141: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +142: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +143: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +144: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:03 +145: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +146: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +147: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +148: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +149: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +150: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +151: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +152: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +153: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +154: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +155: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +156: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +157: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +158: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +159: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +160: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +161: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +162: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +163: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: Taken -> 04b -> Today shows the saved dose (P1-T01, T16)
+00:04 +164: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_code_dialog_test.dart: shell entry point patient shell has no linking-code entry
+00:04 +165: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/doctor_linking_screen_test.dart: linking is blocked until consent, then passes true
+00:04 +166: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_validation_test.dart: Sign Up retry clears the duplicate-email error
+00:04 +167: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/auth_validation_test.dart: Sign Up retry clears the duplicate-email error
+00:04 +168: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +169: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +170: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +171: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +172: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +173: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +174: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +175: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +176: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +177: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +178: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +179: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +180: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +181: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:04 +182: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +183: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +184: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +185: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +186: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +187: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +188: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +189: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +190: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/dose_confirmation_flow_test.dart: a failed save shows an error with Retry (P1-T03)
+00:05 +191: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +192: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +193: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +194: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +195: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +196: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +197: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +198: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +199: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +200: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +201: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:05 +202: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +203: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +204: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +205: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +206: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +207: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +208: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +209: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +210: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +211: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +212: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +213: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/linked_patients_dashboard_test.dart: pull refresh works with 0 patients and updates links
+00:06 +214: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/login_screen_test.dart: shows Figma content with a single sign-in button
+00:06 +215: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/login_screen_test.dart: shows Figma content with a single sign-in button
+00:06 +216: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +217: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +218: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +219: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +220: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +221: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +222: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +223: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +224: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +225: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +226: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +227: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +228: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +229: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:06 +230: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +231: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +232: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +233: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +234: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +235: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +236: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +237: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +238: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +239: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +240: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +241: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +242: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +243: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +244: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +245: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +246: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +247: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +248: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +249: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +250: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +251: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +252: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +253: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +254: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +255: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +256: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +257: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:07 +258: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:08 +259: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:08 +260: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:08 +261: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_navigation_test.dart: Today editor returns to Medications without saving a cancelled draft
+00:08 +262: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +263: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +264: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +265: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +266: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +267: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +268: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +269: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +270: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +271: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +272: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +273: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: empty list has inline Add; invalid form and Cancel write nothing
+00:08 +274: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: adding a medication schedules its Android reminder
+00:08 +275: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: adding a medication schedules its Android reminder
+00:08 +276: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: adding a medication schedules its Android reminder
+00:08 +277: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: adding a medication schedules its Android reminder
+00:08 +278: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: adding a medication schedules its Android reminder
+00:08 +279: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:08 +280: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:08 +281: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:08 +282: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:08 +283: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +284: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +285: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +286: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +287: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +288: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +289: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +290: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: no overflow at 320px, text x1.0
+00:09 +291: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:09 +292: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:09 +293: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:10 +294: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:10 +295: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:10 +296: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:10 +297: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:10 +298: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:10 +299: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +300: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +301: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +302: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +303: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +304: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +305: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: add two picker times, reject duplicate, remove a time, save persists
+00:11 +306: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/missed_follow_up_ui_test.dart: tapping a follow-up notification opens the page
+00:11 +307: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/missed_follow_up_ui_test.dart: tapping a follow-up notification opens the page
+00:11 +308: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/patient_home_overflow_test.dart: long names at text x2 on a phone width 390.0
+00:11 +309: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: denied permission: explained, and tracking still works
+00:11 +310: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/notifications_ui_test.dart: denied permission: explained, and tracking still works
+00:11 +311: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/session_isolation_test.dart: details routes are disposed on session change to patient-1
+00:11 +312: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/session_isolation_test.dart: details routes are disposed on session change to patient-1
+00:12 +313: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:12 +314: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:12 +315: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:12 +316: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:12 +317: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:12 +318: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:13 +319: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:13 +320: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:13 +321: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: edit cancel/save, refill cancel/zero, delete Keep/Confirm use one record
+00:13 +322: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/session_isolation_test.dart: session removal disposes protected code dialog
+00:13 +323: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/sign_up_screen_test.dart: Back to login returns to login without stale error
+00:13 +324: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/sign_up_screen_test.dart: Back to login returns to login without stale error
+00:13 +325: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: failed and pending save preserves draft and blocks duplicate taps
+00:14 +326: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: missing record and read failure/retry have recoverable UI
+00:14 +327: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: list fits 320px at double text size
+00:14 +328: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: editor fits 320px at double text size
+00:14 +329: C:/Users/khale/Documents/Codex/2026-11-11/re/outputs/SWE463-Group6-Medication-Follow-Up-App/test/medication_screens_test.dart: refill fits 320px at double text size
+00:14 +330: All tests passed!

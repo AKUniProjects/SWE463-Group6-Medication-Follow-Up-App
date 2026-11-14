@@ -13,6 +13,9 @@ import 'package:medication_follow_up_app/state/dose_provider.dart';
 
 import 'memory_dose_store.dart';
 import 'memory_medication_store.dart';
+import 'fake_doctor_records_repository.dart';
+
+import 'package:medication_follow_up_app/state/doctor_dashboard_provider.dart';
 
 /// Doctor-link repository with no linked patients (app-level tests).
 class NoPatientsRepo implements DoctorLinkRepository {
@@ -35,6 +38,13 @@ Widget appWithProviders(
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<AuthProvider>.value(value: auth),
+      ChangeNotifierProxyProvider<AuthProvider, DoctorDashboardProvider>(
+        create: (_) => DoctorDashboardProvider(
+          FakeDoctorRecordsRepository(links ?? NoPatientsRepo()),
+        ),
+        update: (_, a, dashboard) =>
+            dashboard!..updateSession(a.isDoctor ? a.userId : null),
+      ),
       // Feature #3: only in tests that check reminders (others run without).
       if (notifications != null)
         ChangeNotifierProvider<NotificationService>.value(value: notifications),

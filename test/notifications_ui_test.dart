@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medication_follow_up_app/screens/medication_due_screen.dart';
 import 'package:medication_follow_up_app/screens/notification_settings_screen.dart';
+import 'package:medication_follow_up_app/screens/refill_tracking_screen.dart';
 import 'package:medication_follow_up_app/services/medication_repository.dart';
 import 'package:medication_follow_up_app/services/notification_service.dart';
 import 'package:medication_follow_up_app/state/auth_provider.dart';
@@ -176,4 +177,36 @@ void main() {
 
     expect(find.text('Hello, ${patient.displayName}'), findsOneWidget);
   });
+
+  testWidgets('a refill notification opens the connected supply tracker', (
+    tester,
+  ) async {
+    await openToday(tester);
+    plugin.tap(
+      plugin.scheduled.values
+          .firstWhere((r) => r.decoded.kind == ReminderKind.refill)
+          .payload,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(RefillTrackingScreen), findsOneWidget);
+    expect(find.text('3 tablet remaining'), findsOneWidget);
+  });
+
+  testWidgets(
+    'a notification for another patient cannot navigate this session',
+    (tester) async {
+      await openToday(tester);
+      plugin.tap(
+        const ReminderPayload(
+          kind: ReminderKind.refill,
+          patientId: 'another-patient',
+          medicationId: 'another-medication',
+          time: '09:00',
+        ).encode(),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(RefillTrackingScreen), findsNothing);
+      expect(find.text('Hello, ${patient.displayName}'), findsOneWidget);
+    },
+  );
 }

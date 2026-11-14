@@ -46,6 +46,7 @@ void main() {
   late List<String> stockCalls;
   late ConsumptionStatus stockResult;
   late bool stockOffline;
+  MedicationError? stockFailure;
   late DoseProvider provider;
 
   DoseProvider build({DosePolicy policy = const DosePolicy()}) => DoseProvider(
@@ -55,6 +56,7 @@ void main() {
     tickInterval: null, // tests call evaluateStatuses() themselves
     consumeStock: ({required medicationId, required doseRecordId}) async {
       stockCalls.add(doseRecordId);
+      if (stockFailure != null) throw MedicationException(stockFailure!);
       if (stockOffline) throw StateError('offline');
       return stockResult;
     },
@@ -79,6 +81,7 @@ void main() {
     stockCalls = [];
     stockResult = ConsumptionStatus.consumed;
     stockOffline = false;
+    stockFailure = null;
     provider = build();
   });
 
@@ -191,6 +194,27 @@ void main() {
       expect(stockCalls, hasLength(2));
     });
   });
+
+  test(
+    'real repository transient stock errors retry with the same dose ID',
+    () async {
+      await start(provider);
+      stockFailure = MedicationError.unavailable;
+      final confirmation = await provider.confirm(provider.todayDoses.first);
+      expect(await confirmation!.stockWarning, contains('connection returns'));
+      await provider.evaluateStatuses();
+      expect(stockCalls, hasLength(2));
+      stockFailure = null;
+      await provider.evaluateStatuses();
+      expect(stockCalls, [
+        'm1_20261113_0800',
+        'm1_20261113_0800',
+        'm1_20261113_0800',
+      ]);
+      await provider.evaluateStatuses();
+      expect(stockCalls, hasLength(3));
+    },
+  );
 
   group('evaluateStatuses', () {
     test(

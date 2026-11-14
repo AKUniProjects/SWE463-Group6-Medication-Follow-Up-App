@@ -10,6 +10,11 @@ import 'package:medication_follow_up_app/screens/patient_details_screen.dart';
 import 'package:medication_follow_up_app/services/doctor_link_repository.dart';
 import 'package:medication_follow_up_app/state/doctor_link_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:medication_follow_up_app/state/auth_provider.dart';
+import 'package:medication_follow_up_app/state/doctor_dashboard_provider.dart';
+
+import 'support/controllable_auth_repository.dart';
+import 'support/fake_doctor_records_repository.dart';
 
 LinkedPatient patient(String id, String name, {String doctor = 'doc'}) =>
     LinkedPatient(
@@ -67,23 +72,36 @@ void main() {
     repo = FakeRepo()
       ..byDoctor['doc'] = [patient('p1', 'Patient One')]
       ..byDoctor['doc2'] = [
-        patient('p9', 'Other Doctor Patient', doctor: 'doc2')
+        patient('p9', 'Other Doctor Patient', doctor: 'doc2'),
       ];
     links = DoctorLinkProvider(repo)..updateSession(uid: 'doc', isDoctor: true);
   });
 
   tearDown(() => links.dispose());
 
+  Widget dashboardApp() => MultiProvider(
+    providers: [
+      ChangeNotifierProvider<DoctorLinkProvider>.value(value: links),
+      ChangeNotifierProvider<AuthProvider>(
+        create: (_) => AuthProvider(ControllableAuthRepository()),
+      ),
+      ChangeNotifierProvider<DoctorDashboardProvider>(
+        create: (_) =>
+            DoctorDashboardProvider(FakeDoctorRecordsRepository(repo))
+              ..updateSession('doc'),
+      ),
+    ],
+    child: const MaterialApp(home: LinkedPatientsDashboard()),
+  );
+
   for (final count in [0, 1, 3]) {
-    testWidgets('pull refresh works with $count patients and updates links',
-        (tester) async {
+    testWidgets('pull refresh works with $count patients and updates links', (
+      tester,
+    ) async {
       repo.byDoctor['doc'] = [
         for (var i = 0; i < count; i++) patient('p$i', 'Patient $i'),
       ];
-      await tester.pumpWidget(ChangeNotifierProvider.value(
-        value: links,
-        child: const MaterialApp(home: LinkedPatientsDashboard()),
-      ));
+      await tester.pumpWidget(dashboardApp());
       await tester.pumpAndSettle();
       final before = repo.loads;
       repo.byDoctor['doc'] = [patient('new', 'New linked patient')];
@@ -96,7 +114,7 @@ void main() {
       await tester.drag(find.byType(ListView), const Offset(0, 400));
       await tester.pumpAndSettle();
       expect(find.text('New linked patient'), findsNothing);
-      expect(find.text('No linked patients yet.'), findsOneWidget);
+      expect(find.text('No patient records are shared yet.'), findsOneWidget);
     });
   }
 
@@ -124,8 +142,9 @@ void main() {
 
     test('errors keep the previous list and retry works', () async {
       await links.loadLinkedPatients();
-      repo.failNext =
-          const DoctorLinkException(DoctorLinkErrorCode.permissionDenied);
+      repo.failNext = const DoctorLinkException(
+        DoctorLinkErrorCode.permissionDenied,
+      );
       expect(await links.loadLinkedPatients(), isFalse);
       expect(links.linkedPatientsError, contains('permission'));
       expect(links.linkedPatients, hasLength(1));
@@ -160,7 +179,9 @@ void main() {
     test('doctor revocation removes the patient after refresh', () async {
       await links.loadLinkedPatients();
       expect(
-          await links.revokePatientLink(links.linkedPatients.single), isTrue);
+        await links.revokePatientLink(links.linkedPatients.single),
+        isTrue,
+      );
       expect(repo.revoked, ['p1_doc']);
       expect(links.linkedPatients, isEmpty);
     });
@@ -169,7 +190,9 @@ void main() {
       await links.loadLinkedPatients();
       repo.failNext = const DoctorLinkException(DoctorLinkErrorCode.network);
       expect(
-          await links.revokePatientLink(links.linkedPatients.single), isFalse);
+        await links.revokePatientLink(links.linkedPatients.single),
+        isFalse,
+      );
       expect(links.linkedPatients, hasLength(1));
       expect(links.linkedPatientsError, contains('Network'));
     });
@@ -177,16 +200,12 @@ void main() {
 
   group('dashboard adapter', () {
     Future<void> pump(WidgetTester tester) async {
-      await tester.pumpWidget(
-        ChangeNotifierProvider<DoctorLinkProvider>.value(
-          value: links,
-          child: const MaterialApp(home: LinkedPatientsDashboard()),
-        ),
-      );
+      await tester.pumpWidget(dashboardApp());
     }
 
-    testWidgets('loading, then real patients in the teammate dashboard',
-        (tester) async {
+    testWidgets('loading, then real patients in the teammate dashboard', (
+      tester,
+    ) async {
       final gate = repo.gate = Completer<void>();
       await pump(tester);
       await tester.pump();
@@ -204,29 +223,35 @@ void main() {
       repo.byDoctor['doc'] = [];
       await pump(tester);
       await tester.pumpAndSettle();
-      expect(find.text('No linked patients yet.'), findsOneWidget);
+      expect(find.text('No patient records are shared yet.'), findsOneWidget);
     });
 
     testWidgets('error before first load offers retry', (tester) async {
       repo.failNext = const DoctorLinkException(DoctorLinkErrorCode.network);
       await pump(tester);
       await tester.pumpAndSettle();
-      expect(find.textContaining('Network error'), findsOneWidget);
+      expect(
+        find.textContaining('Could not load linked patients'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
       expect(find.text('Patient One'), findsOneWidget);
     });
 
-    testWidgets('tapping a patient opens details with the right identity',
-        (tester) async {
+    testWidgets('tapping a patient opens details with the right identity', (
+      tester,
+    ) async {
       await pump(tester);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Patient One'));
+      await tester.ensureVisible(find.text('View patient'));
+      await tester.tap(find.text('View patient'));
       await tester.pumpAndSettle();
 
-      final details = tester
-          .widget<PatientDetailsScreen>(find.byType(PatientDetailsScreen));
+      final details = tester.widget<PatientDetailsScreen>(
+        find.byType(PatientDetailsScreen),
+      );
       expect(details.patient.patientId, 'p1');
       expect(details.patient.patientName, 'Patient One');
     });

@@ -1,5 +1,7 @@
 # Person 1 Phase 3 handoff
 
+**Integration update — 14 November 2026:** The combined version includes Person 2's medication/refill work and Person 4's doctor dashboard. Refill notification taps open Refills and reject another patient's payload. Temporary MedicationException stock failures are retried with the original dose ID. The retry queue remains in memory, so the shutdown limitation below still applies. See [PHASE3_INTEGRATION.md](PHASE3_INTEGRATION.md) for the combined checks; the earlier branch/base instructions and missing doctor-query note below describe the pre-integration snapshot.
+
 **Branch:** phase3/doses-reminders. **Base:** origin/phase3/medications-refills (Person 2's branch, not merged yet). Merge this branch after Person 2's PR, then rebase onto main.
 
 | Scope | Status |

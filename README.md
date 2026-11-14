@@ -10,7 +10,7 @@ Phase 3 Flutter prototype for Android and Chrome, using fictional medical data.
 - Codes expire 30 days after server creation time. Doctors can generate, copy, replace, and deactivate codes. Replacement reports partial failures instead of hiding an older active code.
 - Consent confirmation carries the previewed doctor UID. The repository rejects a changed identity; rules revalidate the written doctor UID against the code at commit time.
 - Patients and doctors can revoke links through repository/provider operations. Patient revocation has UI; doctor-side Revoke UI remains pending.
-- Firestore rules cover users, doctorCodes, doctorLinks, medications and immutable stock-consumption receipts. Other collections remain default-denied.
+- Firestore rules cover users, doctorCodes, doctorLinks, medications, immutable stock-consumption receipts and doseRecords. Other collections remain default-denied.
 - Doctor Dashboard receives real active linked patients through LinkedPatientsDashboard. Pull-to-refresh works for empty, short, and longer lists. Provider request generations prevent older reads from overwriting newer mutation/refresh results.
 - Patient Home cards retain status chips and Taken feedback in a growing action area. Buttons have a minimum 48px height without shrinking enlarged text. Regression tests cover 320/390px widths, text scales through 2x, and long names.
 
@@ -18,9 +18,9 @@ Phase 3 Flutter prototype for Android and Chrome, using fictional medical data.
 
 Patient navigation contains Today, Medications and History, plus a Sign out action. The approved Insights destination is not integrated yet. Doctors have a separate dashboard and linking-code action.
 
-Person 2's medication CRUD and supply tracking now use authenticated patient-scoped Firestore data through Provider/ChangeNotifier. Today displays the same saved medication plan and stock; it no longer presents sample doses or hardcoded refill warnings in the authenticated flow. Dose confirmation/history, Android reminders and missed-dose follow-up are connected (see Person 1 below). Real adherence statistics remain teammate-owned work.
+Person 2's medication CRUD and supply tracking use authenticated patient-scoped Firestore data through Provider/ChangeNotifier. Today displays the same saved medication plan and stock. Dose confirmation/history, Android reminders, refill notifications and missed-dose follow-up are connected (see Person 1 below). Person 4's dashboard subscribes to linked patients' saved doses and medications to calculate adherence summaries.
 
-The doctor adapter passes real Firebase patient UIDs, but statistics stay empty until the statistics owner reads doseRecords for linked patients. Zero records currently display as 0% adherence; this does not indicate measured nonadherence. Doctor-side revocation UI and real patient-history content remain pending.
+The doctor dashboard distinguishes missing evaluated data from measured 0% adherence. Patient Details receives the summary captured when opened; live details/history content and doctor-side revocation UI remain pending. Dose history does not fabricate records for days when the application was never opened. See [the integration record](docs/PHASE3_INTEGRATION.md) for verified behavior and remaining limitations.
 
 ## Shared architecture and contracts
 
@@ -51,7 +51,7 @@ See the [handoff](docs/PERSON1_HANDOFF.md) for the demonstration steps, tests an
 | Essential feature | Current status | Evidence |
 |---|---|---|
 | #2 Medication Management | Implemented for the owned CRUD flow | Validated multi-time Add/Edit, full-screen Keep/Confirm soft deletion, Firestore persistence, shared Today/list/refill refresh, patient isolation and error handling |
-| #8 Medication Refill Reminder | In progress | Supply edits including zero, inclusive low-stock threshold, explicit consumption units, estimates and testable alert hooks work; Android notification delivery is not connected or verified |
+| #8 Medication Refill Reminder | Implemented and integrated | Shared supply edits, inclusive thresholds, explicit consumption units and estimates; Person 1's Android service schedules/cancels refill notifications. Refill taps open the tracker. Android refill delivery needs a device recheck for this merged version. |
 
 Medications → Add medication / tap a saved card → Edit → Delete confirmation. Refills are reachable from Medications and Today. Editors opened from Today return to Medications. Cancellation does not write; revision checks reject stale drafts instead of overwriting newer stock.
 
@@ -191,7 +191,7 @@ First check the process/project/rules path. Do not kill unrelated processes. The
 - Doctor role alone never grants patient-record access; an active patient-approved link is required.
 - Code guessing is not server-rate-limited in this Firestore-only prototype.
 - Revocation blocks future server-authorized reads, but cannot recall data already received/cached.
-- Medication reads require ownership or an active doctor link; only the patient may write. Soft deletion retains metadata and stock receipts are immutable. Dose-record permissions remain Person 1's unfinished integration.
+- Medication/dose reads require ownership or an active doctor link; only the patient may write. Soft deletion retains metadata and stock receipts are immutable. Updated rules are tested locally, not deployed by this merge.
 - Local rules/tests are not live deployment. No Firebase deployment is part of this workflow.
 - Fictional coursework data only; production healthcare readiness is outside the project scope.
 
